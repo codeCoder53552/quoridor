@@ -1,0 +1,53 @@
+:root {
+    --header-height: 100px;
+}
+@font-face {
+    font-family: roboto;
+    src: url('res/roboto.woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: roboto-med;
+    src: url('res/roboto-med.woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+body {
+    font-family: roboto, arial;
+    margin: 0;
+    padding: 0;
+    background-color: #9c9c9c;
+}
+
+.header {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: var(--header-height);
+    background-color: #e6e6e6;
+    box-shadow: 0 3px 6px rgba(0,0,0,.2);
+    text-indent: 130px;
+    background-image: url(res/quoridor.png);
+    background-size: auto 80%;
+    background-repeat: no-repeat;
+    background-position: 30px center;
+}
+.header-title {
+    font-family: roboto-med, roboto, arial;
+    color: #3c3c3c;
+    font-size: 2.5rem;
+}
+
+.game-container {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: calc(100% - var(--header-height));
+    top: var(--header-height);
+}  
