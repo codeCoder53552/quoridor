@@ -4,6 +4,7 @@ const GRID_WIDTH = 9;
 const GRID_HEIGHT = 9;
 const GRID_COLOR_PRIMARY = "#dbb8a1";
 const GRID_COLOR_SECONDARY = "#7d5942";
+const WALL_ACTIVE_COLOR = "#38281e";
 
 // Init canvas and start game loop
 document.addEventListener("DOMContentLoaded", () => {
@@ -30,6 +31,24 @@ function initCanvas() {
             ctx.fillRect(i * squareSize, j * squareSize, squareSize, squareSize);
         }
     }
-
     return ctx;
+}
+
+//Draws vertical walls based upon row/column location
+function addVerticalWall(ctx, squareSize, column, row) {
+    //X is valid at 1-8, Y is valid at 0-7
+    let x = column * squareSize; // Calculates x/y location based upon array location & squareSize
+    let y = row * squareSize;
+
+    ctx.fillStyle = WALL_ACTIVE_COLOR; 
+    ctx.fillRect(x-squareSize/16, y, squareSize/8, squareSize * 2);
+}
+
+//Draws horizontal walls based upon row/column location
+function addHorizontalWall(ctx, squareSize, column, row) {
+    let x = column * squareSize;
+    let y = row * squareSize;
+
+    ctx.fillStyle = WALL_ACTIVE_COLOR;
+    ctx.fillRect(x, y-squareSize/16, squareSize*2, squareSize/8);
 }
