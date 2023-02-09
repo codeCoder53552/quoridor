@@ -48,7 +48,18 @@ function initCanvas() {
             }
         }
     }
-    addHorizontalWall(ctx, squareSize, 7, 8);
+    //Loads in Pawns
+    var player1 = new Image();
+    var player2 = new Image();
+    player1.src = 'res/Player-1.png';
+    player2.src = 'res/Player-2.png';
+    player1.onload = function() {
+        ctx.drawImage(player1, (4*squareSize) + (4*offset), 0, squareSize, squareSize);
+    }
+    player2.onload = function() {
+        ctx.drawImage(player2, (4*squareSize) + (4*offset), (8*squareSize) + (8*offset), squareSize, squareSize);
+    }
+
     return ctx;
 }
 
