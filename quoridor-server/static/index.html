@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lobby</title>
+  </head>
+  <body>
+    <h1>Welcome to server</h1>
+    <form action="" onsubmit="joinRoom(event)">
+      <p>Join room code</p>
+      <input type="text" id="roomId" autocomplete="off"/>
+      <button>Join</button>
+    </form>
+
+    <ul id="messages"></ul>
+
+    <script>
+      console.log("init")
+
+      function joinRoom(event) {
+        var roomId = document.getElementById("roomId").value
+        var newUrl = "room/" + roomId + "/index.html"
+        console.log(newUrl)
+        window.location.replace(newUrl)
+        event.preventDefault()
+      }
+
+    </script>
+  </body>
+</html>
