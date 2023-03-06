@@ -18,8 +18,8 @@
 
             console.log(roomId)
 
-            var client_id = Date.now()
-            document.querySelector("#ws-id").textContent = client_id;
+            // var client_id = Date.now()
+            // document.querySelector("#ws-id").textContent = client_id;
             console.log(`ws://localhost:8082/ws/${roomId}`)
             var ws = new WebSocket(`ws://localhost:8082/ws/${roomId}`);
             ws.onmessage = function(event) {

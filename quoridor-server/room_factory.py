@@ -10,6 +10,8 @@ class RoomTypes:
     game = "game"
 
 class RoomFactory:
+    # increasing index
+    number = 0
     # roomFactory = None
     def __init__(self) -> None:
         pass
@@ -29,6 +31,7 @@ class RoomFactory:
 
         # give random roomid
         # newRoom.set_id(str(uuid.uuid1()))
-        newRoom.set_id("hello_world")
+        newRoom.set_id(f"{type}{RoomFactory.number}")
+        RoomFactory.number += 1
 
         return newRoom

@@ -10,6 +10,7 @@
       <input type="text" id="roomId" autocomplete="off"/>
       <button>Join</button>
     </form>
+    <button onclick='makeRoom("chat")'>Make Chat Room</button>
 
     <ul id="messages"></ul>
 
@@ -20,8 +21,30 @@
         var roomId = document.getElementById("roomId").value
         var newUrl = "room/" + roomId + "/index.html"
         console.log(newUrl)
-        window.location.replace(newUrl)
+        // window.location.replace(newUrl)
+        window.location.href = newUrl;
         event.preventDefault()
+      }
+
+      function makeRoom(roomType) {
+        console.log("making room " + roomType)
+
+        var response
+        fetch("/make_room/" + roomType)
+          .then(response => response.text())
+          .then((response) => {
+            response = response.replace('"', "")
+            response = response.replace('"', "")
+            console.log("a"+response)
+            var newUrl = "room/" + response + "/index.html"
+            console.log(newUrl)
+            console.log(response)
+            window.location.href = newUrl
+          })
+          .catch(err => console.log(err))
+        let data = response.blob
+
+        console.log("b"+data)
       }
 
     </script>

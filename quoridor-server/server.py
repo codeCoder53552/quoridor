@@ -18,7 +18,7 @@ from room_factory import RoomFactory
 
 app = FastAPI()
 
-basePath = "."
+basePath = os.path.dirname(__file__)
 
 rooms: Dict[str, Room] = dict()
 
@@ -45,7 +45,7 @@ def load_room(roomId: str, item: str):
     room: Room = rooms.get(roomId, None)
 
     if room is None:
-        raise HTTPException(status_code=500, detail="invalid room")
+        raise HTTPException(status_code=500, detail=f"invalid room: {roomId}")
 
     return FileResponse(os.path.join(basePath, "static", room.folder, item))    
 
