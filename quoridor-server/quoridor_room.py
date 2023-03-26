@@ -4,7 +4,7 @@ from fastapi import WebSocket
 class ChatRoom (Room):
     def __init__(self):
         super().__init__()
-        self.folder = "chat"
+        self.folder = "../quoridor-client"
 
     async def connect(self, clientId, sock: WebSocket):
         await super().connect(clientId, sock)
@@ -25,3 +25,7 @@ class ChatRoom (Room):
         data = {"type" : "message", "message": data}
 
         await self.broadcast(data)
+
+
+
+

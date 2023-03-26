@@ -33,19 +33,29 @@ class Board:
 
     def flood(self, player_n, player_s, player_e = None, player_w = None):
 
-        # # do a flood starting at each player
-        # unknown = [player_n, player_s]
+        """
+        the parameters represent player locations as a tupple of (x,y)
+        For example, player_n is the (x,y) tupple for the player trying to
+        go north or up.
 
-        # if player_e != None:
-        #     unknown.append(player_e)
-        # if player_w != None:
-        #     unknown.append(player_w)
+        psudo code:
+        make dictionary of tupple to playerId
 
+        while dictionary is not empty:
+            start a flood starting at one of the players
+            keep a list of everything that touches the current flood
+            (this includes borders and players)
+            if another player can be reached from this flood, add to reached and remove from dictionary
+        """
+
+        # dictonary of player positions were we don't know how they
+        # connect yet
         unknown = {
             player_n: "player_n",
             player_s: "player_s"
         }
 
+        # for each player, can they reach their destination?
         reachable = {
             "player_n": False,
             "player_s": False,
@@ -53,21 +63,25 @@ class Board:
             "player_w": False
         }
 
+        # player_e and player_w are only needed for four player
         if player_e != None:
             unknown[player_e] = "player_e"
         if player_w != None:
             unknown[player_w] = "player_w"
 
         while len(unknown) != 0:
-            key, value = unknown.popitem()
-            x, y = key
+            positionTupple, playerId = unknown.popitem()
+            x, y = positionTupple
             # reached = players and boarders hit in current fill
-            reached = [value]
+            reached = [playerId]
 
+            # when a tile gets hit, all tiles arround it get added to openList
+            # only if thoes tiles haven't been REACHED yet
             openList = [(x,y)]
             self.board[y][x] = Types.REACHED
 
             while len(openList) != 0:
+                # take a tile to calculate from open list
                 x, y = openList.pop()
 
                 ## check current grid conditions
@@ -120,17 +134,23 @@ class Board:
                 print()
                 time.sleep(.1)
 
+            # the reached list will contain players and
+            # edges that got hit in this flood
+            # EX: reached = ["player_n", "n"]
             for i in reached:
+                # if player
                 if len(i) > 1:
+                    # last letter of player name is its goal
                     goal = i[-1]
                     reachable[i] = goal in reached
 
+        # clear board so this can rerun the next time
         for i in range(0,BOARD_DIM,2):
             for j in range(0,BOARD_DIM,2):
                 self.board[i][j] = Types.PLAYER_SPOT
 
         return reachable
-        
+
 
 # this only runs if this is the main file
 if __name__ == "__main__":
