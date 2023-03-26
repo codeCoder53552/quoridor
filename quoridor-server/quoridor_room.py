@@ -1,7 +1,7 @@
 from room import Room
 from fastapi import WebSocket
 
-class ChatRoom (Room):
+class QuoridorRoom (Room):
     def __init__(self):
         super().__init__()
         self.folder = "../quoridor-client"

@@ -1,5 +1,6 @@
 from room import Room
 from chat_room import ChatRoom
+from quoridor_room import QuoridorRoom
 import uuid
 from enum import Enum
 
@@ -26,6 +27,8 @@ class RoomFactory:
         # initiate correct room type
         if type == RoomTypes.chat:
             newRoom = ChatRoom()
+        elif type == RoomTypes.game:
+            newRoom = QuoridorRoom()
         else:
             return None
 
