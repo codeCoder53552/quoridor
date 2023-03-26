@@ -4,7 +4,7 @@ from fastapi import WebSocket
 class QuoridorRoom (Room):
     def __init__(self):
         super().__init__()
-        self.folder = "../quoridor-client"
+        self.folder = "quoridor-client"
 
     async def connect(self, clientId, sock: WebSocket):
         await super().connect(clientId, sock)

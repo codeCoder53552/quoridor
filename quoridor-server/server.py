@@ -38,17 +38,25 @@ def get_resource(item):
 
 
 # forward to webpage for specific room
-@app.get("/room/{roomId}/{item}")
-def load_room(roomId: str, item: str):
-    print(f"get {roomId}/{item}")
+@app.get("/room/{roomId}/{item1}/{item2}")
+def load_room(roomId: str, item1: str, item2: Union[str, None] = None):
+    # print(f"get {roomId}/{item1}/{item2}")
     global rooms
     room: Room = rooms.get(roomId, None)
 
     if room is None:
         raise HTTPException(status_code=500, detail=f"invalid room: {roomId}")
 
-    return FileResponse(os.path.join(basePath, "static", room.folder, item))    
+    path = None
+    if item2 == None:
+        path = os.path.join(basePath, "static", room.folder, item1)
+    else:
+        path = os.path.join(basePath, "static", room.folder, item1, item2)
+    return FileResponse(path)    
 
+@app.get("/room/{roomId}/{item1}")
+def load_room2(roomId: str, item1: str):
+    return load_room(roomId, item1)
 
 # initialize new room
 @app.get("/make_room/{roomType}")
