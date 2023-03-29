@@ -18,10 +18,43 @@ class Board:
         # makes a BOARD_DIM x BOARD_DIM array of empty and player spaces
         self.board = [[Types.EMPTY if j % 2 == 1 or i % 2 == 1 else Types.PLAYER_SPOT for j in range(BOARD_DIM)] for i in range(BOARD_DIM)]
 
-    def place_wall(self, coords):
+    def place_wall(self, coords, player_n = None, player_s = None, player_e = None, player_w = None):
+        added = []
+        failed = False
+        reason = ""
+
         for coord in coords:
             x, y = coord
+            if self.board[y][x] == Types.WALL:
+                failed = True
+                reason = "Wall already placed"
+                break
             self.board[y][x] = Types.WALL
+            added.append(coord)
+
+        # check if player can reach dest
+        if not failed and player_n != None and player_s != None:
+            reachable = self.flood(player_n, player_s, player_e, player_w)
+            if player_n != None and not reachable["player_n"]:
+                failed = True
+                reason = "Wall blocks player path"
+            elif player_s != None and not reachable["player_s"]:
+                failed = True
+                reason = "Wall blocks player path"
+            elif player_e != None and not reachable["player_e"]:
+                failed = True
+                reason = "Wall blocks player path"
+            elif player_w != None and not reachable["player_w"]:
+                failed = True
+                reason = "Wall blocks player path"
+
+        # reverse wall placement if failed
+        if failed:
+            for coord in added:
+                x, y = coord
+                self.board[y][x] = Types.EMPTY
+            raise Exception(reason)
+
 
     def __str__(self) -> str:
         out = ""
@@ -278,10 +311,13 @@ if __name__ == "__main__":
 
     # reachable = board.flood((8, 8), (0, 8))
 
-    # board.place_wall([(7,6), (5,6), (6,7), (6,5)])
+    try:
+        board.place_wall([(7,6), (5,6), (6,7)], (6,6), (8,6))
+    except Exception as e:
+        print(e)
 
-    validMoves = board.valid_moves((6,6), (8,6))
-    print(validMoves)
+    # validMoves = board.valid_moves((6,6), (8,6))
+    # print(validMoves)
 
     # validMoves = board.valid_moves((6,6), (8,6))
     # print(validMoves)
