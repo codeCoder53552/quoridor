@@ -69,6 +69,7 @@ def make_room(roomType: str):
 
     # keep track of running rooms
     rooms[room.id] = room
+    print(f"RoomID: \"{room.id}\"")
 
     # give roomid to player
     return room.id

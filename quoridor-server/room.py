@@ -30,7 +30,7 @@ class Room :
 
     # receive messages from client (message processing in inherited classes)
     async def receive(self, clientId: str, data):
-        print(f"room receive {data}")
+        #print(f"room receive {data}")
         pass
 
     def set_id(self, id):
