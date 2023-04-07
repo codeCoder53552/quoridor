@@ -3,8 +3,11 @@ from board import Board
 class QuoridorGame:
     def __init__(self):
         self.board = Board()
-        self.players = {"player_n": None, "player_s":None, "player_e":None, "player_w":None}
-        self.players_pos = {"player_n": None, "player_s":None, "player_e":None, "player_w":None}
+        self.players = {"player_n": None, "player_s": None, "player_e": None, "player_w": None}
+        self.players_pos = {"player_n": (int(len(self.board))/2, 0), 
+                            "player_s": (int(len(self.board))/2, len(self.board[0]) - 1), 
+                            "player_e": (len(self.board) - 1, int(len(self.board[0]))/2),
+                            "player_w": (0, int(len(self.board[0]))/2)}
         self.gameOver = False
 
     def add_player(self, playerID):
@@ -45,13 +48,13 @@ class QuoridorGame:
     # current_player_pos: tuple (x, y)
     def game_over(self, current_player, current_player_pos):
         x, y = current_player_pos
-        if current_player == "player_n" and x == len(self.board) - 1:
+        if current_player == "player_n" and y == len(self.board[0]) - 1:
             return True
-        elif current_player == "player_s" and x == 0:
+        elif current_player == "player_s" and y == 0:
             return True
-        elif current_player == "player_e" and y == 0:
+        elif current_player == "player_e" and x == 0:
             return True
-        elif current_player == "player_w" and y == len(self.board[0]) - 1:
+        elif current_player == "player_w" and x == len(self.board) - 1:
             return True
         else:
             return False
