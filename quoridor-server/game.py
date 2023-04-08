@@ -4,10 +4,10 @@ class QuoridorGame:
     def __init__(self):
         self.board = Board()
         self.players = {"player_n": None, "player_s": None, "player_e": None, "player_w": None}
-        self.players_pos = {"player_n": (int(len(self.board))/2, 0), 
-                            "player_s": (int(len(self.board))/2, len(self.board[0]) - 1), 
-                            "player_e": (len(self.board) - 1, int(len(self.board[0]))/2),
-                            "player_w": (0, int(len(self.board[0]))/2)}
+        self.players_pos = {"player_n": (len(self.board)//2, 0), 
+                            "player_s": (len(self.board)//2, len(self.board[0]) - 1), 
+                            "player_e": (len(self.board) - 1, len(self.board[0])//2),
+                            "player_w": (0, len(self.board[0])//2)}
         self.gameOver = False
 
     def add_player(self, playerID):
@@ -42,6 +42,9 @@ class QuoridorGame:
             return None
 
         return playerNum
+    
+    def update_position(self, player, position):
+        self.players_pos[player] = position
 
     # Parameter types
     # current_player: String
