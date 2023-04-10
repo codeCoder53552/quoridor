@@ -280,9 +280,9 @@ class Board:
                         openList.append((x,y+2))
 
                 # DEBUG: print after each iteration
-                print(self)
-                print()
-                time.sleep(.1)
+                # print(self)
+                # print()
+                # time.sleep(.1)
 
             # the reached list will contain players and
             # edges that got hit in this flood
