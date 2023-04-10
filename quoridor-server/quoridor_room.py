@@ -1,6 +1,8 @@
 from room import Room
 from game import QuoridorGame
 from fastapi import WebSocket
+import json
+from types import SimpleNamespace
 
 class QuoridorRoom (Room):
     def __init__(self):
@@ -39,7 +41,10 @@ class QuoridorRoom (Room):
         await super().receive(clientId, data)
 
         print(data)
-        data = {"type" : "message", "message": data}
+        messageData = {"type" : "message", "message": data}
+        # Parse JSON into an object with attributes corresponding to dict keys.
+        moveObject = json.loads(data, object_hook=lambda d: SimpleNamespace(**d))
+        self.game.make_move(clientId, moveObject)
 
         await self.broadcast(data)
 
