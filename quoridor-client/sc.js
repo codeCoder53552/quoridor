@@ -10,12 +10,71 @@ const HOVER_COLOR = "#8c8c8c";
 const HOVER_SELECT_COLOR = "#4c4c4c";
 
 var squareSize, wallWidth;
-var lastRow = -1, lastCol = -1;
+var lastRow = -1, lastCol = -1, lastDirection = "";
+var gameBoard = [
+    { type: "player", row: 0, col: 4, playerNum: 1 },
+    { type: "wall", row: 0, col: 0, direction: "below" },
+    { type: "wall", row: 3, col: 0, direction: "right" },
+    { type: "player", row: 8, col: 4, playerNum: 2 }
+];
 
 // Init canvas and start game loop
 document.addEventListener("DOMContentLoaded", () => {
     let ctx = initCanvas();
+    drawGameBoard(ctx);
 });
+
+// Initialize the game board with all empty spaces
+function clearGameBoard(ctx) {
+    for (const piece of gameBoard) {
+        switch (piece.type) {
+            case "player":
+                const color = (piece.row + piece.col) % 2 ? GRID_COLOR_PRIMARY : GRID_COLOR_SECONDARY;
+                fillSquare(ctx, piece.col, piece.row, color);
+                break;
+            case "wall":
+                if (piece.direction === 'below') {
+                    addHorizontalWall(ctx, piece.col, piece.row, WALL_INACTIVE_COLOR);
+                }
+                else {
+                    addVerticalWall(ctx, piece.col, piece.row, WALL_INACTIVE_COLOR);
+                }
+                break;
+            default:
+                console.log("Unknown game piece: ", piece.type);
+                break;
+        }
+    }
+}
+
+// Draw each game piece. Accepts a callback to run after all pieces are drawn including image loads
+// Callback might be run multiple times, so avoid expensive operations
+function drawGameBoard(ctx, callback) {
+    for (const piece of gameBoard) {
+        switch (piece.type) {
+            case "player":
+                let player = new Image();
+                player.src = `res/Player-${piece.playerNum}.png`;
+                player.onload = () => {
+                    ctx.drawImage(player, piece.col * (squareSize + wallWidth), piece.row * (squareSize + wallWidth), squareSize, squareSize);
+                    callback?.(ctx);
+                }
+                break;
+            case "wall":
+                if (piece.direction === 'below') {
+                    addHorizontalWall(ctx, piece.col, piece.row, WALL_ACTIVE_COLOR);
+                }
+                else {
+                    addVerticalWall(ctx, piece.col, piece.row, WALL_ACTIVE_COLOR);
+                }
+                break;
+            default:
+                console.log("Unknown game piece: ", piece.type);
+                break;
+        }
+    }
+    callback?.(ctx);
+}
 
 // Draw / scale the initial game board and return the canvas context
 function initCanvas() {
@@ -37,9 +96,9 @@ function initCanvas() {
             ctx.fillRect((i * squareSize) + (i * wallWidth), (j * squareSize) + (j * wallWidth), squareSize, squareSize);
             ctx.fillStyle = WALL_INACTIVE_COLOR;
             // Handle filling in the inactive vertical walls
-            if(i != 0){
+            if (i != 0){
                 // Fills in vertical inactive walls & covers the space between verticle & horizontal walls
-                if(j != GRID_WIDTH-1){
+                if (j != GRID_WIDTH - 1) {
                     ctx.fillRect((i * squareSize) + ((i-1) * wallWidth), (j * squareSize) + (j * wallWidth), wallWidth, squareSize + wallWidth);
                 }
                 else{
@@ -47,25 +106,11 @@ function initCanvas() {
                 }
             }
             // Handle filling in the inactive horizontal walls
-            if(j != 0){
+            if (j != 0) {
                 ctx.fillRect((i * squareSize) + (i * wallWidth), (j * squareSize) + ((j-1) * wallWidth), squareSize, wallWidth);
             }
         }
     }
-    // Loads in Pawns
-    var player1 = new Image();
-    var player2 = new Image();
-    player1.src = 'res/Player-1.png';
-    player2.src = 'res/Player-2.png';
-    player1.onload = function() {
-        ctx.drawImage(player1, (4*squareSize) + (4*wallWidth), 0, squareSize, squareSize);
-    }
-    player2.onload = function() {
-        ctx.drawImage(player2, (4*squareSize) + (4*wallWidth), (8*squareSize) + (8*wallWidth), squareSize, squareSize);
-    }
-
-    addVerticalWall(ctx, squareSize, 1, 1, WALL_ACTIVE_COLOR);
-    addHorizontalWall(ctx, squareSize, 7, 7, WALL_ACTIVE_COLOR);
 
     canv.addEventListener("mousemove", evt => handleHover(evt, ctx));
     canv.addEventListener("click", evt => handleSelect(evt, ctx));
@@ -73,6 +118,7 @@ function initCanvas() {
     return ctx;
 }
 
+// Get row, column, and wall from event/cursor location
 function eventLocation(evt) {
     const col = Math.floor(evt.offsetX / squareSize);
     const row = Math.floor(evt.offsetY / squareSize);
@@ -94,25 +140,32 @@ function eventLocation(evt) {
 
 // Allow the user to see where they can move / place walls
 function handleHover(evt, ctx) {
-    fillSquare(ctx, lastCol, lastRow, (lastRow + lastCol) % 2 ? GRID_COLOR_PRIMARY : GRID_COLOR_SECONDARY);
-    if (lastCol < GRID_WIDTH - 1) addVerticalWall(ctx, lastCol + 1, lastRow, WALL_INACTIVE_COLOR);
-    if (lastRow < GRID_HEIGHT - 1) addHorizontalWall(ctx, lastCol, lastRow + 1, WALL_INACTIVE_COLOR);
-
     let { row, col, wallDirection } = eventLocation(evt);
-    
     if (row >= GRID_WIDTH || col >= GRID_HEIGHT) return;
 
-    lastRow = row;
-    lastCol = col;
-    
-    if (wallDirection === "right" && col < GRID_WIDTH - 1 && row < GRID_HEIGHT - 1) {
-        addVerticalWall(ctx, col + 1, row, HOVER_COLOR);
-    }
-    else if (wallDirection === "bottom" && row < GRID_HEIGHT - 1 && col < GRID_WIDTH - 1) {
-        addHorizontalWall(ctx, col, row + 1, HOVER_COLOR);
-    }
-    else {
-        fillSquare(ctx, col, row, HOVER_COLOR);
+    // If the position has changed, update the hover
+    if (row != lastRow || col != lastCol || wallDirection != lastDirection) {
+        // First, clear the previous square
+        fillSquare(ctx, lastCol, lastRow, (lastRow + lastCol) % 2 ? GRID_COLOR_PRIMARY : GRID_COLOR_SECONDARY);
+        if (lastCol < GRID_WIDTH - 1) addVerticalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
+        if (lastRow < GRID_HEIGHT - 1) addHorizontalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
+        
+        // Next, draw the game piece (player, wall) and draw the hover elements afterwards
+        drawGameBoard(ctx, ctx => {
+            lastRow = row;
+            lastCol = col;
+            lastDirection = wallDirection;
+            
+            if (wallDirection === "right" && col < GRID_WIDTH - 1 && row < GRID_HEIGHT - 1) {
+                addVerticalWall(ctx, col, row, HOVER_COLOR);
+            }
+            else if (wallDirection === "bottom" && row < GRID_HEIGHT - 1 && col < GRID_WIDTH - 1) {
+                addHorizontalWall(ctx, col, row, HOVER_COLOR);
+            }
+            else {
+                fillSquare(ctx, col, row, HOVER_COLOR);
+            }
+        });
     }
 }
 
@@ -129,6 +182,7 @@ function handleSelect(evt, ctx) {
     }
 }
 
+// Fill in a square with a specified color
 function fillSquare(ctx, col, row, color) {
     let x = (col * squareSize) + (col * wallWidth); // Calculates x/y location based upon array location & squareSize
     let y = row * squareSize + (row * wallWidth);
@@ -147,21 +201,19 @@ function fillSquare(ctx, col, row, color) {
 // Draws vertical walls based upon row/column location
 function addVerticalWall(ctx, column, row, color) {
     if (row === GRID_HEIGHT - 1) row--;
-    // X is valid at 1-8, Y is valid at 0-7
-    let x = column * squareSize; // Calculates x/y location based upon array location & squareSize
+    let x = (column + 1) * squareSize; // Calculates x/y location based upon array location & squareSize
     let y = row * squareSize;
 
     ctx.fillStyle = color; 
-    ctx.fillRect(x + ((column - 1) * wallWidth), y + (row * wallWidth), wallWidth, (squareSize * 2) + wallWidth);
+    ctx.fillRect(x + (column * wallWidth), y + (row * wallWidth), wallWidth, (squareSize * 2) + wallWidth);
 }
 
 // Draws horizontal walls based upon row/column location
 function addHorizontalWall(ctx, column, row, color) {
     if (column === GRID_WIDTH - 1) column--;
-    // X is valid at 0-7, Y is valid at 1-8
     let x = column * squareSize;
-    let y = row * squareSize;
+    let y = (row + 1) * squareSize;
 
     ctx.fillStyle = color;
-    ctx.fillRect(x + (column * wallWidth), y + ((row-1) * wallWidth), (squareSize * 2) + wallWidth, wallWidth);
+    ctx.fillRect(x + (column * wallWidth), y + (row * wallWidth), (squareSize * 2) + wallWidth, wallWidth);
 }
