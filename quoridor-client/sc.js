@@ -11,6 +11,9 @@ const HOVER_SELECT_COLOR = "#4c4c4c";
 
 var squareSize, wallWidth;
 var lastRow = -1, lastCol = -1, lastDirection = "";
+var turn = 0;
+var gameFinished = false;
+
 var gameBoard = [
     { type: "player", row: 0, col: 4, playerNum: 1 },
     { type: "wall", row: 0, col: 0, direction: "below" },
@@ -20,7 +23,8 @@ var gameBoard = [
 
 // Init canvas and start game loop
 document.addEventListener("DOMContentLoaded", () => {
-    let ctx = initCanvas();
+    const canvas = document.getElementById("game_canvas");
+    let ctx = initCanvas(canvas);
     drawGameBoard(ctx);
 });
 
@@ -77,8 +81,7 @@ function drawGameBoard(ctx, callback) {
 }
 
 // Draw / scale the initial game board and return the canvas context
-function initCanvas() {
-    const canv = document.getElementById("game_canvas");
+function initCanvas(canv) {
     const ctx = canv.getContext("2d");
 
     // Make sure the width of the canvas is the closest multiple of the grid height
@@ -96,12 +99,12 @@ function initCanvas() {
             ctx.fillRect((i * squareSize) + (i * wallWidth), (j * squareSize) + (j * wallWidth), squareSize, squareSize);
             ctx.fillStyle = WALL_INACTIVE_COLOR;
             // Handle filling in the inactive vertical walls
-            if (i != 0){
+            if (i != 0) {
                 // Fills in vertical inactive walls & covers the space between verticle & horizontal walls
                 if (j != GRID_WIDTH - 1) {
                     ctx.fillRect((i * squareSize) + ((i-1) * wallWidth), (j * squareSize) + (j * wallWidth), wallWidth, squareSize + wallWidth);
                 }
-                else{
+                else {
                     ctx.fillRect((i * squareSize) + ((i-1) * wallWidth), (j * squareSize) + (j * wallWidth), wallWidth, squareSize);
                 }
             }
@@ -139,12 +142,12 @@ function eventLocation(evt) {
 }
 
 // Allow the user to see where they can move / place walls
-function handleHover(evt, ctx) {
-    let { row, col, wallDirection } = eventLocation(evt);
-    if (row >= GRID_WIDTH || col >= GRID_HEIGHT) return;
+function handleHover(evt, ctx, clear) {
+    let { row, col, wallDirection } = clear ? { lastRow, lastCol, lastDirection } : eventLocation(evt);
+    if (turn !== 0 || row >= GRID_WIDTH || col >= GRID_HEIGHT) return;
 
     // If the position has changed, update the hover
-    if (row != lastRow || col != lastCol || wallDirection != lastDirection) {
+    if (clear || row != lastRow || col != lastCol || wallDirection != lastDirection) {
         // First, clear the previous square
         fillSquare(ctx, lastCol, lastRow, (lastRow + lastCol) % 2 ? GRID_COLOR_PRIMARY : GRID_COLOR_SECONDARY);
         if (lastCol < GRID_WIDTH - 1) addVerticalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
@@ -170,6 +173,9 @@ function handleHover(evt, ctx) {
 }
 
 function handleSelect(evt, ctx) {
+    handleHover(void 0, ctx, true);
+    turn = (turn + 1) % 2;
+
     let { row, col, wallDirection } = eventLocation(evt);
     if (wallDirection === "right") {
         console.log(`Clicked wall to the right of (${row}, ${col})`);
