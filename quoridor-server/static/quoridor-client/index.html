@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Quoridor</title>
+        <link rel="stylesheet" href="st.css">
+        <script src="sc.js"></script>
+    </head>
+    <body>
+        <div class="game-container" id="game_container">
+            <canvas id="game_canvas">Your browser does not support the HTML5 canvas tag.</canvas>
+        </div>
+        <div class="header">
+            <span class="header-title">Quoridor</span>
+            <form action="" onsubmit="sendMessage(event)">
+                <input type="text" id="messageText" autocomplete="off"/>
+                <button>Send JSON String</button>
+            </form>
+        </div>
+        <script>
+            // get roomId
+            var roomId = window.location.href.match(/room\/(.*)\//)[1]
+
+            console.log(roomId)
+
+            // var client_id = Date.now()
+            // document.querySelector("#ws-id").textContent = client_id;
+            console.log(`ws://localhost:8082/ws/${roomId}`)
+            var ws = new WebSocket(`ws://localhost:8082/ws/${roomId}`);
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                var inputjson = `{\"message\" : \"${input.value}\"}`
+                console.log(inputjson)
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
