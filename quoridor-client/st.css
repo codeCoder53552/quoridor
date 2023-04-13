@@ -29,7 +29,7 @@ body {
     align-items: center;
     width: 100%;
     height: var(--header-height);
-    background-color: #e6e6e6;
+    background-color: #3c3c3c;
     box-shadow: 0 3px 6px rgba(0,0,0,.2);
     text-indent: 130px;
     background-image: url(res/quoridor.png);
@@ -39,7 +39,7 @@ body {
 }
 .header-title {
     font-family: roboto-med, roboto, arial;
-    color: #3c3c3c;
+    color: #fff;
     font-size: 2.5rem;
 }
 
