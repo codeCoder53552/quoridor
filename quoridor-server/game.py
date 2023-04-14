@@ -130,8 +130,12 @@ class QuoridorGame:
         return Result(True, None, gameBoard, self.playerTurn, self.gameOver, self.validMoves[PLAYERS[self.playerTurn]], recentPlayer)
 
     def prep_game_board(self):
-        player1Row, player1Col = self.players_coords.get("player_n")
-        player2Row, player2Col = self.players_coords.get("player_s")
+        player1tuple = self.players_coords.get("player_n")
+        player2tuple = self.players_coords.get("player_s")
+
+        player1Row, player1Col = tuple(ti / 2 for ti in player1tuple)
+        player2Row, player2Col = tuple(ti / 2 for ti in player2tuple)
+        
         gameBoard = [{"type": "player", "row":player1Row, "col": player1Col, "playerNum":1},
                      {"type": "player", "row":player2Row, "col": player2Col, "playerNum":2},]
         gameBoard.extend(self.wallsPlayed)
