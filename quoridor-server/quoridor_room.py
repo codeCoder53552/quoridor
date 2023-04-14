@@ -14,7 +14,6 @@ class QuoridorRoom (Room):
         await super().connect(clientId, sock)
 
         if not self.game.gameOver:
-
             if self.game.add_player(clientId):
                 pass
         else:

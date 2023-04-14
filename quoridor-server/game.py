@@ -38,6 +38,24 @@ class QuoridorGame:
             if tuple(coordinate) == move:
                 return True
         return False
+    
+    def get_player_coord_from_move(self, move):
+        row = move.row * 2
+        column = move.col * 2
+        return (row, column)
+    
+    def get_wall_coord_from_move(self, move):
+        row = move.row * 2
+        column = move.col * 2
+        coordList = []
+        if (move.direction == "bottom"):
+            coordList.append((row + 1, column))
+            coordList.append((row + 1, column + 1))
+            coordList.append((row + 1, column + 2))
+        
+        return coordList
+
+
 
     def get_player_coords(self):
         index = 0
@@ -59,20 +77,24 @@ class QuoridorGame:
                 if player == playerId:
                     positions = self.get_player_coords()
                     if move.type == "wall":
-                        self.board.place_wall([move.coordinate], positions[0], positions[1], positions[2], positions[3])
-                        self.validMoves = self.board.valid_moves(positions[0], positions[1], positions[2], positions[3])
-                        self.playerTurn = (self.playerTurn + 1) % self.maxNumOfplayers
-                        self.gameOver = self.game_over(move.player, tuple(move.coordinate))
-                        return Result(True, self.validMoves, self.gameOver)
+                        coordinate = (move.row, move.col)
+                        result = self.board.place_wall([coordinate], positions[0], positions[1], positions[2], positions[3])
+                        if result:
+                            self.validMoves = self.board.valid_moves(positions[0], positions[1], positions[2], positions[3])
+                            self.playerTurn = (self.playerTurn + 1) % self.maxNumOfplayers
+                            return Result(True, self.validMoves, self.gameOver)
+                        else:
+                            return Result(False, "Wall placement was not successful.")
 
                     elif move.type == "player":
-                        if self.is_valid_move(move.coordinate, move.player):
-                            self.update_coords(move.player, tuple(move.coordinate))
+                        coordinate = self.get_player_coord_from_move(move)
+                        if self.is_valid_move(coordinate, move.player):
+                            self.update_coords(move.player, coordinate)
                             self.validMoves = self.board.valid_moves(positions[0], positions[1], positions[2], positions[3])
-                            self.gameOver = self.game_over(move.player, tuple(move.coordinate))
+                            self.gameOver = self.game_over(move.player, coordinate)
                             return Result(True, self.validMoves, self.gameOver)
                     else:
-                        return Result(False, "Move is invalid.")
+                        return Result(False, "Move is not a valid move type.")
                 else:
                     return Result(False, "Player and playerID do not match.")
             else:
@@ -130,7 +152,12 @@ class QuoridorGame:
     # coords, player_* : tuple (x, y)
     # place a wall to corresponding position
     def place_wall(self, coords, player_n = None, player_s = None, player_e = None, player_w = None):
-        self.board.place_wall(coords, player_n, player_s, player_e, player_w)
+        try:
+            self.board.place_wall(coords, player_n, player_s, player_e, player_w)
+            return True
+        except Exception:
+            return False
+
 
     # Parameter types
     # current_player: String; current_player_coords: tuple (x, y)
