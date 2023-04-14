@@ -19,10 +19,8 @@ class QuoridorRoom (Room):
         else:
             print("Game is over. Please return home and start a new room to play.")
 
-        await self.broadcast({"type":"message","message":f"{clientId} has joined the chat"})
-
-        if self.game.numOfActivePlayers == self.game.maxNumOfplayers:
-            await self.broadcast(f"validMoves:{self.game.validMoves}")
+        await self.broadcast(f"validMoves:{self.game.validMoves}")
+            
 
     async def disconnect(self, clientId: str):
         print("disconnect chat")
