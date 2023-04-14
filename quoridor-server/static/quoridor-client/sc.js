@@ -20,6 +20,10 @@ var gameBoard = [
     { type: "wall", row: 3, col: 0, direction: "right" },
     { type: "player", row: 8, col: 4, playerNum: 2 }
 ];
+var validMoves = [
+    { row: 0, col: 0 },
+    { row: 1, col: 1 }
+];
 
 // Init canvas and start game loop
 document.addEventListener("DOMContentLoaded", () => {
@@ -148,27 +152,41 @@ function handleHover(evt, ctx, clear) {
 
     // If the position has changed, update the hover
     if (clear || row != lastRow || col != lastCol || wallDirection != lastDirection) {
+        document.getElementById("game_canvas").style.cursor = "default";
         // First, clear the previous square
         fillSquare(ctx, lastCol, lastRow, (lastRow + lastCol) % 2 ? GRID_COLOR_PRIMARY : GRID_COLOR_SECONDARY);
         if (lastCol < GRID_WIDTH - 1) addVerticalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
         if (lastRow < GRID_HEIGHT - 1) addHorizontalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
         
         // Next, draw the game piece (player, wall) and draw the hover elements afterwards
-        drawGameBoard(ctx, ctx => {
-            lastRow = row;
-            lastCol = col;
-            lastDirection = wallDirection;
-            
-            if (wallDirection === "right" && col < GRID_WIDTH - 1 && row < GRID_HEIGHT - 1) {
-                addVerticalWall(ctx, col, row, HOVER_COLOR);
-            }
-            else if (wallDirection === "bottom" && row < GRID_HEIGHT - 1 && col < GRID_WIDTH - 1) {
-                addHorizontalWall(ctx, col, row, HOVER_COLOR);
-            }
-            else {
+        drawGameBoard(ctx, ctx => drawHover(ctx, row, col, wallDirection));
+    }
+}
+
+// Draw hover element
+function drawHover(ctx, row, col, wallDirection) {
+    const canv = document.getElementById("game_canvas");
+
+    lastRow = row;
+    lastCol = col;
+    lastDirection = wallDirection;
+    
+    if (wallDirection === "right" && col < GRID_WIDTH - 1 && row < GRID_HEIGHT - 1) {
+        addVerticalWall(ctx, col, row, HOVER_COLOR);
+        canv.style.cursor = "pointer";
+    }
+    else if (wallDirection === "bottom" && row < GRID_HEIGHT - 1 && col < GRID_WIDTH - 1) {
+        addHorizontalWall(ctx, col, row, HOVER_COLOR);
+        canv.style.cursor = "pointer";
+    }
+    else {
+        for (const sq of validMoves) {
+            if (sq.row === row && sq.col === col) {
                 fillSquare(ctx, col, row, HOVER_COLOR);
+                canv.style.cursor = "pointer";
+                return;
             }
-        });
+        }
     }
 }
 
