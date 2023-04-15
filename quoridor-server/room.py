@@ -33,6 +33,12 @@ class Room :
         #print(f"room receive {data}")
         pass
 
+    async def send(self, clientId: str, data):
+        print(f"sending to clientID: {clientId}")
+        if not clientId in self.clients.keys():
+            raise Exception("clientId not in clients")
+        await self.clients[clientId].send_json(data)
+
     def set_id(self, id):
         self.id = id
 
