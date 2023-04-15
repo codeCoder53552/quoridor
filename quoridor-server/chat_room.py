@@ -5,10 +5,13 @@ class ChatRoom (Room):
     def __init__(self):
         super().__init__()
         self.folder = "chat"
+        self.numberClients = 0
 
     async def connect(self, clientId, sock: WebSocket):
         await super().connect(clientId, sock)
 
+        await self.send(clientId, {"type":"message","message":f"you are #{self.numberClients} in the chat!"})
+        self.numberClients += 1
         await self.broadcast({"type":"message","message":f"{clientId} has joined the chat"})
 
     async def disconnect(self, clientId: str):
