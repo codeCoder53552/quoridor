@@ -19,6 +19,16 @@ class Result:
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
+    
+    def toDictionary(self):
+        if self.success:
+            dictResult = {"success":self.success, "gameBoard" : self.gameBoard, "playerTurn" : self.playerTurn, "gameOver" : self.gameOver,
+                        "validMoves" : self.validMoves, "wallsLeft" : self.wallsLeft
+                        }
+            return dictResult
+        else:
+            dictResult = {"success" : self.success, "message" : self.message}
+            return dictResult
 
 
 class QuoridorGame:

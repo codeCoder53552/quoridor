@@ -23,7 +23,7 @@ class QuoridorRoom (Room):
 
         result = self.game.prep_result(playerNum)
 
-        await self.send(clientId, result)
+        await self.send(clientId, result.toDictionary())
             
     async def disconnect(self, clientId: str):
         print("disconnect chat")
@@ -56,7 +56,7 @@ class QuoridorRoom (Room):
             if data is not None:
                 moveObject = json.loads(data, object_hook=lambda d: SimpleNamespace(**d))
                 result = self.game.make_move(clientId, moveObject)
-                await self.broadcast(result)
+                await self.broadcast(result.toDictionary())
             else:
                 print("Data is null.")
         except json.decoder.JSONDecodeError:
