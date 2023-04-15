@@ -62,7 +62,7 @@ class QuoridorRoom (Room):
                 else:
                     await self.send(clientId, result.toDictionary())
             else:
-                print("Data is null.")
+                await self.broadcast({"success" : False, "message" : "game is over."})
         except json.decoder.JSONDecodeError:
             await self.broadcast({"success": False, "message":"Data wasn't able to be decoded from JSON format."})
 
