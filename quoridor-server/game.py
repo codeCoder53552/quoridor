@@ -1,7 +1,7 @@
 from board import Board
 import json
 
-PLAYERS = ["player_n", "player_s", "player_e", "player_w"]
+
 
 class Result:
     def __init__(self, success, message=None, gameboard = None, playerTurn = None, gameOver = None, validMoves=None,  wallsLeft = None):
@@ -23,6 +23,7 @@ class Result:
 
 class QuoridorGame:
     def __init__(self):
+        self.PLAYERS = ["player_n", "player_s", "player_e", "player_w"]
         self.board = Board()
         self.players = {"player_n": None, "player_s": None, "player_e": None, "player_w": None}
         self.players_coords = {"player_n": (len(self.board.board)//2, 0), 
@@ -79,8 +80,8 @@ class QuoridorGame:
     def make_move(self, playerId, move):
         print(f"{move.player} is attempting to play a {move.type} move on row {move.row} and col {move.col}")
         try:
-            print(f"{PLAYERS[self.playerTurn]} and {move.player}")
-            if PLAYERS[self.playerTurn] == move.player:
+            print(f"{self.PLAYERS[self.playerTurn]} and {move.player}")
+            if self.PLAYERS[self.playerTurn] == move.player:
                 player = self.players.get(move.player)
                 if player == playerId:
                     positions = self.get_player_coords()
@@ -130,7 +131,7 @@ class QuoridorGame:
     def prep_result(self, recentPlayer):
         gameBoard = self.prep_game_board()
         print(self.validMoves)
-        return Result(True, None, gameBoard, self.playerTurn, self.gameOver, self.validMoves[PLAYERS[recentPlayer]], self.wallsLeft[recentPlayer])
+        return Result(True, None, gameBoard, self.playerTurn, self.gameOver, self.validMoves[self.PLAYERS[recentPlayer]], self.wallsLeft[recentPlayer])
 
     def prep_game_board(self):
         player1tuple = self.players_coords.get("player_n")
@@ -230,14 +231,14 @@ class Move:
             self.direction = direction
 
     
-if __name__ == "__main__":
-    game = QuoridorGame()
-    game.add_player("player1")
-    game.add_player("player2")
-    move = Move("wall", 5, 4, "player_n", "bottom")
-    result = game.make_move("player1", move)
-    print(result.toJSON())
+# if __name__ == "__main__":
+#     game = QuoridorGame()
+#     game.add_player("player1")
+#     game.add_player("player2")
+#     move = Move("wall", 5, 4, "player_n", "bottom")
+#     result = game.make_move("player1", move)
+#     print(result.toJSON())
 
-    move = Move("player", 7, 4, "player_s")
-    result = game.make_move("player2", move)
-    print(result.toJSON())
+#     move = Move("player", 7, 4, "player_s")
+#     result = game.make_move("player2", move)
+#     print(result.toJSON())
