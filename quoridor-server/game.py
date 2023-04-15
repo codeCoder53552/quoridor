@@ -64,11 +64,11 @@ class QuoridorGame:
         x = move.col * 2
         y = move.row * 2
         coordList = []
-        if (move.direction == "bottom"):
+        if (move.direction == "right"):
             coordList.append((x + 1, y))
             coordList.append((x + 1, y + 1))
             coordList.append((x + 1, y + 2))
-        elif (move.direction == "right"):
+        elif (move.direction == "bottom"):
             coordList.append((x, y + 1))
             coordList.append((x + 1, y + 1))
             coordList.append((x + 2, y + 2))

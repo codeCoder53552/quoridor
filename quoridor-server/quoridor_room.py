@@ -54,7 +54,7 @@ class QuoridorRoom (Room):
         # Failure:
         # success: (boolean) False, message: (String) error message
         try:
-            if data is not None:
+            if data is not None and not self.game.gameOver:
                 moveObject = json.loads(data, object_hook=lambda d: SimpleNamespace(**d))
                 result = self.game.make_move(clientId, moveObject)
                 await self.broadcast(result.toDictionary())
