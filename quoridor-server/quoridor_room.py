@@ -57,7 +57,10 @@ class QuoridorRoom (Room):
             if data is not None and not self.game.gameOver:
                 moveObject = json.loads(data, object_hook=lambda d: SimpleNamespace(**d))
                 result = self.game.make_move(clientId, moveObject)
-                await self.broadcast(result.toDictionary())
+                if result.success:
+                    await self.broadcast(result.toDictionary())
+                else:
+                    await self.send(clientId, result.toDictionary())
             else:
                 print("Data is null.")
         except json.decoder.JSONDecodeError:
