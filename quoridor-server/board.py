@@ -190,7 +190,6 @@ class Board:
         return (coord[0] // 2, coord[1] // 2)
     
 
-
     def flood(self, player_n, player_s, player_e = None, player_w = None):
 
         """
@@ -300,8 +299,15 @@ class Board:
             for i in reached:
                 # if player
                 if len(i) > 1:
+                    lut = {
+                        "n": "s",
+                        "s": "n",
+                        "e": "w",
+                        "w": "e"
+                    }
+
                     # last letter of player name is its goal
-                    goal = i[-1]
+                    goal = lut[i[-1]]
                     reachable[i] = goal in reached
 
         # clear board so this can rerun the next time
