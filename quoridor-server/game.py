@@ -33,13 +33,13 @@ class Result:
 
 class QuoridorGame:
     def __init__(self):
-        self.PLAYERS = ["player_s", "player_n", "player_w", "player_e"]
+        self.PLAYERS = ["player_n", "player_s", "player_e", "player_w"]
         self.board = Board()
-        self.players = {"player_s": None, "player_n": None, "player_w": None, "player_e": None}
-        self.players_coords = {"player_s": (len(self.board.board)//2, 0), 
-                            "player_n": (len(self.board.board)//2, len(self.board.board[0]) - 1), 
-                            "player_w": (len(self.board.board) - 1, len(self.board.board[0])//2),
-                            "player_e": (0, len(self.board.board[0])//2)}
+        self.players = {"player_n": None, "player_s": None, "player_e": None, "player_w": None}
+        self.players_coords = {"player_n": (len(self.board.board)//2, 0), 
+                            "player_s": (len(self.board.board)//2, len(self.board.board[0]) - 1), 
+                            "player_e": (len(self.board.board) - 1, len(self.board.board[0])//2),
+                            "player_w": (0, len(self.board.board[0])//2)}
         self.playerTurn = 0
         self.maxNumOfplayers = 2
         self.numOfActivePlayers = 0
@@ -214,10 +214,10 @@ class QuoridorGame:
     # check for end game condition (game over or continue)
     def game_over(self, current_player, current_player_coords):
         x, y = current_player_coords
-        if (current_player == "player_s" and y == len(self.board.board[0]) - 1)\
-        or (current_player == "player_n" and y == 0)\
-        or (current_player == "player_w" and x == 0)\
-        or (current_player == "player_e" and x == len(self.board.board) - 1):
+        if (current_player == "player_n" and y == len(self.board.board[0]) - 1)\
+        or (current_player == "player_s" and y == 0)\
+        or (current_player == "player_e" and x == 0)\
+        or (current_player == "player_w" and x == len(self.board.board) - 1):
             return True
         else:
             return False
@@ -225,10 +225,10 @@ class QuoridorGame:
     # reset the game board without removing existing players
     def reset(self):
         self.board = Board()
-        self.players_coords = {"player_s": (len(self.board)//2, 0), 
-                            "player_n": (len(self.board)//2, len(self.board[0]) - 1), 
-                            "player_w": (len(self.board) - 1, len(self.board[0])//2),
-                            "player_e": (0, len(self.board[0])//2)}
+        self.players_coords = {"player_n": (len(self.board)//2, 0), 
+                            "player_s": (len(self.board)//2, len(self.board[0]) - 1), 
+                            "player_e": (len(self.board) - 1, len(self.board[0])//2),
+                            "player_w": (0, len(self.board[0])//2)}
         self.gameOver = False
 
 # This is just a class to help test the game.
