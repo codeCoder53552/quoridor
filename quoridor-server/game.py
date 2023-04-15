@@ -35,7 +35,7 @@ class QuoridorGame:
     def __init__(self):
         self.PLAYERS = ["player_s", "player_n", "player_w", "player_e"]
         self.board = Board()
-        self.players = {"player_n": None, "player_s": None, "player_e": None, "player_w": None}
+        self.players = {"player_s": None, "player_n": None, "player_w": None, "player_e": None}
         self.players_coords = {"player_s": (len(self.board.board)//2, 0), 
                             "player_n": (len(self.board.board)//2, len(self.board.board[0]) - 1), 
                             "player_w": (len(self.board.board) - 1, len(self.board.board[0])//2),
