@@ -141,7 +141,7 @@ class QuoridorGame:
     def prep_result(self, recentPlayer):
         gameBoard = self.prep_game_board()
         print(self.validMoves)
-        return Result(True, None, gameBoard, self.playerTurn, self.gameOver, self.validMoves[self.PLAYERS[recentPlayer]], self.wallsLeft[recentPlayer])
+        return Result(True, None, gameBoard, self.playerTurn, self.gameOver, self.validMoves[self.PLAYERS[self.playerTurn]], self.wallsLeft[recentPlayer])
 
     def prep_game_board(self):
         player1tuple = self.players_coords.get("player_n")
