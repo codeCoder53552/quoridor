@@ -47,20 +47,20 @@ class QuoridorGame:
     def get_player_coord_from_move(self, move):
         row = move.row * 2
         column = move.col * 2
-        return (row, column)
+        return (column, row)
     
     def get_wall_coord_from_move(self, move):
-        row = move.row * 2
-        column = move.col * 2
+        x = move.col * 2
+        y = move.row * 2
         coordList = []
         if (move.direction == "bottom"):
-            coordList.append((row + 1, column))
-            coordList.append((row + 1, column + 1))
-            coordList.append((row + 1, column + 2))
+            coordList.append((x + 1, y))
+            coordList.append((x + 1, y + 1))
+            coordList.append((x + 1, y + 2))
         elif (move.direction == "right"):
-            coordList.append((row, column + 1))
-            coordList.append((row + 1, column + 1))
-            coordList.append((row + 2, column + 2))
+            coordList.append((x, y + 1))
+            coordList.append((x + 1, y + 1))
+            coordList.append((x + 2, y + 2))
         
         return coordList
 
@@ -77,41 +77,43 @@ class QuoridorGame:
         return playerPos
 
     def make_move(self, playerId, move):
-        print(f"{move.player} is attempting to play a {move.type} move on coordinate {move.coordinate}")
+        print(f"{move.player} is attempting to play a {move.type} move on row {move.row} and col {move.col}")
         try:
+            print(f"{PLAYERS[self.playerTurn]} and {move.player}")
             if PLAYERS[self.playerTurn] == move.player:
                 player = self.players.get(move.player)
                 if player == playerId:
                     positions = self.get_player_coords()
+                    print(f"Positions: {positions}")
                     if move.type == "wall":
                         coordinates = self.get_wall_coord_from_move(move)
+                        print(f"Coordinates to place wall: {coordinates}")
                         if coordinates:
-                            result = self.board.place_wall(coordinates, positions[0], positions[1], positions[2], positions[3])
-                        else:
-                            return Result(False, "Wall coordinates weren't translated well.")
-                        if result:
+                            self.board.place_wall(coordinates, positions[0], positions[1], positions[2], positions[3])
                             self.validMoves = self.board.valid_moves(positions[0], positions[1], positions[2], positions[3])
                             self.wallsLeft[self.playerTurn] -= 1
                             recentPlayer = self.playerTurn
                             self.playerTurn = (self.playerTurn + 1) % self.maxNumOfplayers
-
                             wall = {"type": "wall", "row":move.row, "col": move.col, "direction" : move.direction}
                             self.wallsPlayed.append(wall)
 
-                            return self.prep_result(recentPlayer)
+                            return self.prep_result(recentPlayer)                            
                         else:
-                            return Result(False, "Wall placement was not successful.")
-
+                            return Result(False, "Wall coordinates weren't translated well.")
+                        
                     elif move.type == "player":
-                        nineByNineCoord = (move.row, move.col)
+                        nineByNineCoord = (move.col, move.row)
                         coordinate = self.get_player_coord_from_move(move)
                         if self.is_valid_move(nineByNineCoord, move.player):
                             self.update_coords(move.player, coordinate)
+                            positions = self.get_player_coords()
                             self.validMoves = self.board.valid_moves(positions[0], positions[1], positions[2], positions[3])
                             self.gameOver = self.game_over(move.player, coordinate)
                             recentPlayer = self.playerTurn
                             self.playerTurn = (self.playerTurn + 1) % self.maxNumOfplayers
                             return self.prep_result(recentPlayer)
+                        else:
+                            return Result(False, "Player move coordinate is not valid.")
                     else:
                         return Result(False, "Move is not a valid move type.")
                 else:
@@ -127,15 +129,16 @@ class QuoridorGame:
         
     def prep_result(self, recentPlayer):
         gameBoard = self.prep_game_board()
-        return Result(True, None, gameBoard, self.playerTurn, self.gameOver, self.validMoves[PLAYERS[self.playerTurn]], recentPlayer)
+        print(self.validMoves)
+        return Result(True, None, gameBoard, self.playerTurn, self.gameOver, self.validMoves[PLAYERS[recentPlayer]], self.wallsLeft[recentPlayer])
 
     def prep_game_board(self):
         player1tuple = self.players_coords.get("player_n")
         player2tuple = self.players_coords.get("player_s")
 
-        player1Row, player1Col = tuple(ti / 2 for ti in player1tuple)
-        player2Row, player2Col = tuple(ti / 2 for ti in player2tuple)
-        
+        player1Col, player1Row = tuple(int(ti / 2) for ti in player1tuple)
+        player2Col, player2Row = tuple(int(ti / 2) for ti in player2tuple)
+
         gameBoard = [{"type": "player", "row":player1Row, "col": player1Col, "playerNum":1},
                      {"type": "player", "row":player2Row, "col": player2Col, "playerNum":2},]
         gameBoard.extend(self.wallsPlayed)
@@ -215,4 +218,26 @@ class QuoridorGame:
                             "player_e": (len(self.board) - 1, len(self.board[0])//2),
                             "player_w": (0, len(self.board[0])//2)}
         self.gameOver = False
+
+# This is just a class to help test the game.
+class Move:
+    def __init__(self, type, row, col, player, direction = None):
+        self.type = type
+        self.row = row
+        self.col = col
+        self.player = player
+        if type == "wall":
+            self.direction = direction
+
     
+if __name__ == "__main__":
+    game = QuoridorGame()
+    game.add_player("player1")
+    game.add_player("player2")
+    move = Move("wall", 5, 4, "player_n", "bottom")
+    result = game.make_move("player1", move)
+    print(result.toJSON())
+
+    move = Move("player", 7, 4, "player_s")
+    result = game.make_move("player2", move)
+    print(result.toJSON())
