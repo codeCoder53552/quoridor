@@ -13,15 +13,17 @@ class QuoridorRoom (Room):
     async def connect(self, clientId, sock: WebSocket):
         await super().connect(clientId, sock)
 
+        playerNum = self.game.numOfActivePlayers
+
         if not self.game.gameOver:
             if self.game.add_player(clientId):
                 pass
         else:
             self.broadcast("Game is over. Please return home and start a new room to play.")
-        
-        playerNum = self.game.numOfActivePlayers
 
-        await self.send(clientId, {"validMoves":self.game.validMoves[self.game.PLAYERS[playerNum]], "playerNum": playerNum+1})
+        result = self.game.prep_result(playerNum)
+
+        await self.send(clientId, result)
             
     async def disconnect(self, clientId: str):
         print("disconnect chat")
@@ -54,7 +56,7 @@ class QuoridorRoom (Room):
             if data is not None:
                 moveObject = json.loads(data, object_hook=lambda d: SimpleNamespace(**d))
                 result = self.game.make_move(clientId, moveObject)
-                await self.broadcast(result.toJSON())
+                await self.broadcast(result)
             else:
                 print("Data is null.")
         except json.decoder.JSONDecodeError:
