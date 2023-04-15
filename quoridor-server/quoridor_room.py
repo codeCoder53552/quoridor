@@ -14,17 +14,15 @@ class QuoridorRoom (Room):
         await super().connect(clientId, sock)
 
         if not self.game.gameOver:
-
             if self.game.add_player(clientId):
                 pass
         else:
-            print("Game is over. Please return home and start a new room to play.")
+            self.broadcast("Game is over. Please return home and start a new room to play.")
+        
+        playerNum = self.game.numOfActivePlayers
 
-        await self.broadcast({"type":"message","message":f"{clientId} has joined the chat"})
-
-        if self.game.numOfActivePlayers == self.game.maxNumOfplayers:
-            await self.broadcast(f"validMoves:{self.game.validMoves}")
-
+        await self.send(clientId, {"validMoves":{self.game.validMoves[self.game.PLAYERS[playerNum]]}, "playerNum": playerNum+1})
+            
     async def disconnect(self, clientId: str):
         print("disconnect chat")
         removeResult = self.game.remove_player(clientId)

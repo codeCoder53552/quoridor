@@ -178,8 +178,18 @@ class Board:
                     else:
                         validMoves[player].append((x, y+2))
 
+        # translate to 9x9 coordinates
+        for key in validMoves.keys():
+            for i in range(len(validMoves[key])):
+                validMoves[key][i] = self.to9(validMoves[key][i])
+
         return validMoves
     
+
+    def to9(self, coord):
+        return (coord[0] // 2, coord[1] // 2)
+    
+
 
     def flood(self, player_n, player_s, player_e = None, player_w = None):
 
@@ -316,8 +326,8 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
 
-    # validMoves = board.valid_moves((6,6), (8,6))
-    # print(validMoves)
+    validMoves = board.valid_moves((6,6), (8,6))
+    print(validMoves)
 
     # validMoves = board.valid_moves((6,6), (8,6))
     # print(validMoves)
