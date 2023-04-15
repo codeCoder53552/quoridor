@@ -71,8 +71,9 @@ class QuoridorGame:
         elif (move.direction == "bottom"):
             coordList.append((x, y + 1))
             coordList.append((x + 1, y + 1))
-            coordList.append((x + 2, y + 2))
+            coordList.append((x + 2, y + 1))
         
+        print(f"Wall coords: {coordList}")
         return coordList
 
     def get_player_coords(self):
@@ -241,14 +242,16 @@ class Move:
             self.direction = direction
 
     
-# if __name__ == "__main__":
-#     game = QuoridorGame()
-#     game.add_player("player1")
-#     game.add_player("player2")
-#     move = Move("wall", 5, 4, "player_n", "bottom")
-#     result = game.make_move("player1", move)
-#     print(result.toJSON())
+if __name__ == "__main__":
+    game = QuoridorGame()
+    game.add_player("player1")
+    game.add_player("player2")
+    move = Move("wall", 4, 4, "player_n", "bottom")
+    result = game.make_move("player1", move)
+    print(result.toJSON())
 
-#     move = Move("player", 7, 4, "player_s")
-#     result = game.make_move("player2", move)
-#     print(result.toJSON())
+    move = Move("player", 7, 4, "player_s")
+    result = game.make_move("player2", move)
+    print(result.toJSON())
+
+    print(game.board)
