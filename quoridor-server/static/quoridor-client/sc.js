@@ -35,7 +35,7 @@ const preload = async filenames => {
 
 // Init canvas and start game loop
 document.addEventListener("DOMContentLoaded", async () => {
-    let img = preload(["Player-1.png", "Player-2.png"]);
+    let img = preload(["Player-1.png", "Player-2.png", "Player-3.png", "Player-4.png"]);
     roomID = window.location.href.match(/room\/(.*)\//)[1];
     console.log("Attempting to join room:", roomID);
 
