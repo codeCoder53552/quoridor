@@ -3,6 +3,9 @@ import uvicorn
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+import json
 
 from typing import List, Union, Dict
 
@@ -21,20 +24,6 @@ app = FastAPI()
 basePath = os.path.dirname(__file__)
 
 rooms: Dict[str, Room] = dict()
-
-
-# get main page
-@app.get("/")
-async def read_root():
-    print("main")
-    return FileResponse(os.path.join(basePath, "static", "index.html"))
-
-
-# get resources under the main page
-@app.get("/{item}")
-def get_resource(item):
-    print(f"get {item}")
-    return FileResponse(os.path.join(basePath, "static", item))
 
 
 # forward to webpage for specific room
@@ -74,6 +63,25 @@ def make_room(roomType: str):
     # give roomid to player
     return room.id
 
+@app.get("/list_rooms")
+def list_rooms():
+    global rooms
+    out = {}
+    for room in rooms.values():
+        out[room.id] = room._type
+    return out
+
+# get main page
+@app.get("/")
+async def read_root():
+    print("main")
+    return FileResponse(os.path.join(basePath, "static", "index.html"))
+
+# get resources under the main page
+@app.get("/{item}")
+def get_resource(item):
+    print(f"get {item}")
+    return FileResponse(os.path.join(basePath, "static", item))
 
 class ConnectionManager:
     def __init__(self):

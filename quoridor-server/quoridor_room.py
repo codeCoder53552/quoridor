@@ -8,6 +8,7 @@ class QuoridorRoom (Room):
     def __init__(self):
         super().__init__()
         self.folder = "quoridor-client"
+        self._type = "game"
         self.game = QuoridorGame()
 
     async def connect(self, clientId, sock: WebSocket):
@@ -19,7 +20,7 @@ class QuoridorRoom (Room):
             if self.game.add_player(clientId):
                 pass
         else:
-            self.broadcast("Game is over. Please return home and start a new room to play.")
+            await self.broadcast("Game is over. Please return home and start a new room to play.")
 
         result = self.game.prep_result(playerNum)
         dictionary = result.toDictionary()
