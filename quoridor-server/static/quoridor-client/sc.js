@@ -20,8 +20,6 @@ var socket, roomID;
 
 var gameBoard = [
     { type: "player", row: 0, col: 4, playerNum: 1 },
-    { type: "wall", row: 0, col: 0, direction: "bottom" },
-    { type: "wall", row: 3, col: 0, direction: "right" },
     { type: "player", row: 8, col: 4, playerNum: 2 }
 ];
 var validMoves = [
@@ -32,7 +30,6 @@ var validMoves = [
 const getLastRow = () => lastRows.length > 0 ? lastRows[lastRows.length - 1] : -1;
 const getLastCol = () => lastCols.length > 0 ? lastCols[lastCols.length - 1] : -1;
 const getLastDir = () => lastDirections.length > 0 ? lastDirections[lastDirections.length - 1] : -1;
-const getLastSquare = () => { return { lastRow: getLastRow(), lastCol: getLastCol(), lastDirection: getLastDir() } };
 const preload = async filenames => {
     for (const filename of filenames) {
         const img = new Image();
@@ -171,14 +168,15 @@ function eventLocation(evt) {
 
 // Allow the user to see where they can move / place walls
 function handleHover(evt, ctx, clear) {
-    let { row, col, wallDirection } = clear ? getLastSquare() : eventLocation(evt);
+    let { lastRow, lastCol, lastDirection } = { lastRow: getLastRow(), lastCol: getLastCol(), lastDirection: getLastDir() };
+    let { row, col, wallDirection } = clear ? { lastRow, lastCol, lastDirection } : eventLocation(evt);
     if (turn !== 0 || row >= GRID_WIDTH || col >= GRID_HEIGHT) {
         lastMoveValid = false;
         return;
     }
 
     // If the position has changed, update the hover
-    if (clear || row != getLastRow() || col != getLastCol() || wallDirection != getLastDir()) {
+    if (clear || row != lastRow || col != lastCol || wallDirection != lastDirection) {
         document.getElementById("game_canvas").style.cursor = "default";
 
         // First, clear the previous squares
