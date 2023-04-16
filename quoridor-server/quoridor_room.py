@@ -44,15 +44,7 @@ class QuoridorRoom (Room):
         await super().receive(clientId, data)
 
         print(data)
-        # Parse JSON into an object with attributes corresponding to dict keys.
-        # A move object will have the following key-value pairs.
-        # type: (string) "wall" or "player", player: (String) "player_n", "player_s", "player_w", "player_e", coordinate: (int, int) coordinate where we want to place wall or player.
 
-        # A response will have two formats a success response and an error response.
-        # Success: 
-        # success: (boolean) True, gameOver: (boolean),  possibleMoves: (dict : {playerName : moves})
-        # Failure:
-        # success: (boolean) False, message: (String) error message
         try:
             if data is not None and not self.game.gameOver:
                 moveObject = json.loads(data, object_hook=lambda d: SimpleNamespace(**d))

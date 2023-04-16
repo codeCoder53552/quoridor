@@ -98,6 +98,10 @@ class QuoridorGame:
                     positions = self.get_player_coords()
                     print(f"Positions: {positions}")
                     if move.type == "wall":
+                        
+                        if self.wallsLeft[self.playerTurn] <= 0:
+                            return Result(False, "Player is out of walls to play.")
+                        
                         coordinates = self.get_wall_coord_from_move(move)
                         print(f"Coordinates to place wall: {coordinates}")
                         if coordinates:
@@ -241,17 +245,18 @@ class Move:
         if type == "wall":
             self.direction = direction
 
-    
-if __name__ == "__main__":
-    game = QuoridorGame()
-    game.add_player("player1")
-    game.add_player("player2")
-    move = Move("wall", 4, 4, "player_n", "bottom")
-    result = game.make_move("player1", move)
-    print(result.toJSON())
+# Uncomment to test game features.
 
-    move = Move("player", 7, 4, "player_s")
-    result = game.make_move("player2", move)
-    print(result.toJSON())
+# if __name__ == "__main__":
+#     game = QuoridorGame()
+#     game.add_player("player1")
+#     game.add_player("player2")
+#     move = Move("wall", 4, 4, "player_n", "bottom")
+#     result = game.make_move("player1", move)
+#     print(result.toJSON())
 
-    print(game.board)
+#     move = Move("player", 7, 4, "player_s")
+#     result = game.make_move("player2", move)
+#     print(result.toJSON())
+
+#     print(game.board)
