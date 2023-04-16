@@ -60,7 +60,7 @@ function handleMessage(msg) {
     else if (data.hasOwnProperty('gameOver') && data.gameOver) {
         turn = 1;
         alert("Game over!");
-        return;
+        gameFinished = true;
     }
 
     if (data.hasOwnProperty('playerNum')) {
@@ -201,7 +201,7 @@ function eventLocation(evt) {
 function handleHover(evt, ctx, clear) {
     let { lastRow, lastCol, lastDirection } = { lastRow: getLastRow(), lastCol: getLastCol(), lastDirection: getLastDir() };
     let { row, col, wallDirection } = clear ? { lastRow, lastCol, lastDirection } : eventLocation(evt);
-    if (turn !== 0 || row >= GRID_WIDTH || col >= GRID_HEIGHT) {
+    if (turn !== 0 || gameFinished || row >= GRID_WIDTH || col >= GRID_HEIGHT) {
         lastMoveValid = false;
         return;
     }
