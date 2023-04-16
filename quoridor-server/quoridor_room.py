@@ -21,7 +21,7 @@ class QuoridorRoom (Room):
         
         playerNum = self.game.numOfActivePlayers
 
-        await self.send(clientId, {"validMoves":{self.game.validMoves[self.game.PLAYERS[playerNum]]}, "playerNum": playerNum+1})
+        await self.send(clientId, {"validMoves":self.game.validMoves[self.game.PLAYERS[playerNum]], "playerNum": playerNum+1})
             
     async def disconnect(self, clientId: str):
         print("disconnect chat")
