@@ -2,18 +2,20 @@
 
 const GRID_WIDTH = 9;
 const GRID_HEIGHT = 9;
-const GRID_COLOR_PRIMARY = "#dbb8a1";
-const GRID_COLOR_SECONDARY = "#7d5942";
-const WALL_INACTIVE_COLOR = "#38281e";
-const WALL_ACTIVE_COLOR = "#f66206";
+const GRID_COLOR_PRIMARY = "#BCAAA4";
+const GRID_COLOR_SECONDARY = "#795548";
+const WALL_INACTIVE_COLOR = "#4E342E";
+const WALL_ACTIVE_COLOR = "#E64A19";
 const HOVER_COLOR = "#8c8c8c";
 const HOVER_SELECT_COLOR = "#4c4c4c";
 const SERVER_ADDRESS = "localhost:8082";
 
+const PLAYER_COLORS = ["#43A047", "#E53935", "#000000", "#1565C0"];
+
 var squareSize, wallWidth;
 var lastRows = [], lastCols = [], lastDirections = [], lastMoveValid = false;
 var images = new Map();
-var turn = 1;
+var turn = 1, wallsLeft = 0;
 var playerNum = -1, playerString = "";
 var gameFinished = false;
 var socket, roomID;
@@ -32,6 +34,15 @@ const preload = async filenames => {
         images.set(filename, img);
     }
 }
+const copyRoomCode = () => {
+    navigator.clipboard.writeText(roomID)
+        .then(() => {
+            alert(`Copied room code to clipboard (${roomID})`);
+        })
+        .catch(() => {
+            alert(`Failed to copy room code (${roomID}) to clipboard.`);
+        });
+}
 
 // Init canvas and start game loop
 document.addEventListener("DOMContentLoaded", async () => {
@@ -46,9 +57,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     socket = new WebSocket(`ws://${SERVER_ADDRESS}/ws/${roomID}`);
     socket.onmessage = handleMessage;
+
+    document.getElementById("game_code").addEventListener("click", copyRoomCode);
 });
 
 function handleMessage(msg) {
+    const turnLabel = document.getElementById("game_turn");
     const data = JSON.parse(msg.data);
     console.log(data);
 
@@ -77,10 +91,21 @@ function handleMessage(msg) {
         clearGameBoard(ctx);
         gameBoard = data.gameBoard;
         turn = data.playerTurn === playerNum ? 0 : 1;
+
+        if (turn === 0) {
+            turnLabel.textContent = "Choose your move!";
+            turnLabel.style.backgroundColor = PLAYER_COLORS[playerNum];
+        }
+        else {
+            turnLabel.textContent = "Waiting for opponent . . .";
+            turnLabel.style.backgroundColor = null;
+        }
+
         drawGameBoard(ctx);
     }
-    else if (data.hasOwnProperty('message')) {
-        console.log(data.message);
+    if (data.hasOwnProperty('wallsLeft')) {
+        document.getElementById("game_walls").textContent = data.wallsLeft;
+        wallsLeft = data.wallsLeft;
     }
 }
 
@@ -118,7 +143,7 @@ function drawGameBoard(ctx, callback) {
     for (const piece of gameBoard) {
         switch (piece.type) {
             case "player":
-                ctx.drawImage(images.get(`Player-${piece.playerNum}.png`), piece.col * (squareSize + wallWidth), piece.row * (squareSize + wallWidth), squareSize, squareSize);
+                ctx.drawImage(images.get(`Player-${piece.playerNum}.png`), piece.col * (squareSize + wallWidth) + wallWidth / 2, piece.row * (squareSize + wallWidth) + wallWidth / 2, squareSize - (wallWidth), squareSize - (wallWidth));
                 break;
             case "wall":
                 if (piece.direction === 'bottom') {
@@ -148,6 +173,9 @@ function initCanvas(canv) {
 
     squareSize = Math.floor(containerHeight / GRID_WIDTH);
     wallWidth = Math.floor(squareSize/8);
+
+    canv.width = canv.width - wallWidth;
+    canv.height = canv.height - wallWidth;
 
     for (let i = 0; i < GRID_WIDTH; i++) {
         for (let j = 0; j < GRID_HEIGHT; j++) {
@@ -221,6 +249,7 @@ function handleHover(evt, ctx, clear) {
             if (lastRow < GRID_HEIGHT - 1) addHorizontalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
         }
         
+        clearGameBoard(ctx);
         // Next, draw the game piece (player, wall) and draw the hover elements afterwards
         drawGameBoard(ctx, ctx => drawHover(ctx, row, col, wallDirection));
     }
@@ -235,7 +264,7 @@ function drawHover(ctx, row, col, wallDirection) {
     lastCols.push(col);
     lastDirections.push(wallDirection);
 
-    if (wallDirection === "right" && col < GRID_WIDTH - 1 && row < GRID_HEIGHT - 1) {
+    if (wallsLeft > 0 && wallDirection === "right" && col < GRID_WIDTH - 1 && row < GRID_HEIGHT - 1) {
         // Check to see if there are any overlapping wall pieces
         for (const piece of gameBoard) {
             if (piece.type === "wall" && 
@@ -248,7 +277,7 @@ function drawHover(ctx, row, col, wallDirection) {
         addVerticalWall(ctx, col, row, HOVER_COLOR);
         canv.style.cursor = "pointer";
     }
-    else if (wallDirection === "bottom" && row < GRID_HEIGHT - 1 && col < GRID_WIDTH - 1) {
+    else if (wallsLeft > 0 && wallDirection === "bottom" && row < GRID_HEIGHT - 1 && col < GRID_WIDTH - 1) {
         // Check to see if there are any overlapping wall pieces
         for (const piece of gameBoard) {
             if (piece.type === "wall" && 
