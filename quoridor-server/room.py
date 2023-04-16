@@ -8,6 +8,7 @@ class Room :
         self.id = None
         # which folder is this room's website on?
         self.folder = ""
+        self._type = "parent"
 
         self.clients: Dict[str, WebSocket] = dict()
 

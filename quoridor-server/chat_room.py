@@ -5,6 +5,7 @@ class ChatRoom (Room):
     def __init__(self):
         super().__init__()
         self.folder = "chat"
+        self._type = "chat"
         self.numberClients = 0
 
     async def connect(self, clientId, sock: WebSocket):

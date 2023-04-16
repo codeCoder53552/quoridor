@@ -8,6 +8,7 @@ class QuoridorRoom (Room):
     def __init__(self):
         super().__init__()
         self.folder = "quoridor-client"
+        self._type = "game"
         self.game = QuoridorGame()
 
     async def connect(self, clientId, sock: WebSocket):
