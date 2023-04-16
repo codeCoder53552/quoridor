@@ -8,16 +8,18 @@ const WALL_INACTIVE_COLOR = "#38281e";
 const WALL_ACTIVE_COLOR = "#f66206";
 const HOVER_COLOR = "#8c8c8c";
 const HOVER_SELECT_COLOR = "#4c4c4c";
+const SERVER_ADDRESS = "localhost:8082";
 
 var squareSize, wallWidth;
-var lastRow = -1, lastCol = -1, lastDirection = "";
+var lastRows = [], lastCols = [], lastDirections = [], lastMoveValid = false;
+var images = new Map();
 var turn = 0;
+var playerNum = 1;
 var gameFinished = false;
+var socket, roomID;
 
 var gameBoard = [
     { type: "player", row: 0, col: 4, playerNum: 1 },
-    { type: "wall", row: 0, col: 0, direction: "below" },
-    { type: "wall", row: 3, col: 0, direction: "right" },
     { type: "player", row: 8, col: 4, playerNum: 2 }
 ];
 var validMoves = [
@@ -25,12 +27,36 @@ var validMoves = [
     { row: 1, col: 1 }
 ];
 
+const getLastRow = () => lastRows.length > 0 ? lastRows[lastRows.length - 1] : -1;
+const getLastCol = () => lastCols.length > 0 ? lastCols[lastCols.length - 1] : -1;
+const getLastDir = () => lastDirections.length > 0 ? lastDirections[lastDirections.length - 1] : -1;
+const preload = async filenames => {
+    for (const filename of filenames) {
+        const img = new Image();
+        img.src = `res/${filename}`;
+        await img.decode();
+        images.set(filename, img);
+    }
+}
+
 // Init canvas and start game loop
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    let img = preload(["Player-1.png", "Player-2.png"]);
+    roomID = window.location.href.match(/room\/(.*)\//)[1];
+    console.log("Attempting to join room:", roomID);
+    socket = new WebSocket(`ws://${SERVER_ADDRESS}/ws/${roomID}`);
+    socket.onmessage = handleMessage;
+
     const canvas = document.getElementById("game_canvas");
     let ctx = initCanvas(canvas);
+
+    await img;
     drawGameBoard(ctx);
 });
+
+function handleMessage(msg) {
+    console.log(JSON.parse(msg.data));
+}
 
 // Initialize the game board with all empty spaces
 function clearGameBoard(ctx) {
@@ -41,7 +67,7 @@ function clearGameBoard(ctx) {
                 fillSquare(ctx, piece.col, piece.row, color);
                 break;
             case "wall":
-                if (piece.direction === 'below') {
+                if (piece.direction === 'bottom') {
                     addHorizontalWall(ctx, piece.col, piece.row, WALL_INACTIVE_COLOR);
                 }
                 else {
@@ -61,15 +87,10 @@ function drawGameBoard(ctx, callback) {
     for (const piece of gameBoard) {
         switch (piece.type) {
             case "player":
-                let player = new Image();
-                player.src = `res/Player-${piece.playerNum}.png`;
-                player.onload = () => {
-                    ctx.drawImage(player, piece.col * (squareSize + wallWidth), piece.row * (squareSize + wallWidth), squareSize, squareSize);
-                    callback?.(ctx);
-                }
+                ctx.drawImage(images.get(`Player-${piece.playerNum}.png`), piece.col * (squareSize + wallWidth), piece.row * (squareSize + wallWidth), squareSize, squareSize);
                 break;
             case "wall":
-                if (piece.direction === 'below') {
+                if (piece.direction === 'bottom') {
                     addHorizontalWall(ctx, piece.col, piece.row, WALL_ACTIVE_COLOR);
                 }
                 else {
@@ -147,16 +168,27 @@ function eventLocation(evt) {
 
 // Allow the user to see where they can move / place walls
 function handleHover(evt, ctx, clear) {
+    let { lastRow, lastCol, lastDirection } = { lastRow: getLastRow(), lastCol: getLastCol(), lastDirection: getLastDir() };
     let { row, col, wallDirection } = clear ? { lastRow, lastCol, lastDirection } : eventLocation(evt);
-    if (turn !== 0 || row >= GRID_WIDTH || col >= GRID_HEIGHT) return;
+    if (turn !== 0 || row >= GRID_WIDTH || col >= GRID_HEIGHT) {
+        lastMoveValid = false;
+        return;
+    }
 
     // If the position has changed, update the hover
     if (clear || row != lastRow || col != lastCol || wallDirection != lastDirection) {
         document.getElementById("game_canvas").style.cursor = "default";
-        // First, clear the previous square
-        fillSquare(ctx, lastCol, lastRow, (lastRow + lastCol) % 2 ? GRID_COLOR_PRIMARY : GRID_COLOR_SECONDARY);
-        if (lastCol < GRID_WIDTH - 1) addVerticalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
-        if (lastRow < GRID_HEIGHT - 1) addHorizontalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
+
+        // First, clear the previous squares
+        while (lastRows.length > 0) {
+            let lastRow = lastRows.pop();
+            let lastCol = lastCols.pop();
+            lastDirections.pop();
+
+            fillSquare(ctx, lastCol, lastRow, (lastRow + lastCol) % 2 ? GRID_COLOR_PRIMARY : GRID_COLOR_SECONDARY);
+            if (lastCol < GRID_WIDTH - 1) addVerticalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
+            if (lastRow < GRID_HEIGHT - 1) addHorizontalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
+        }
         
         // Next, draw the game piece (player, wall) and draw the hover elements afterwards
         drawGameBoard(ctx, ctx => drawHover(ctx, row, col, wallDirection));
@@ -167,21 +199,42 @@ function handleHover(evt, ctx, clear) {
 function drawHover(ctx, row, col, wallDirection) {
     const canv = document.getElementById("game_canvas");
 
-    lastRow = row;
-    lastCol = col;
-    lastDirection = wallDirection;
-    
+    lastMoveValid = false;
+    lastRows.push(row);
+    lastCols.push(col);
+    lastDirections.push(wallDirection);
+
     if (wallDirection === "right" && col < GRID_WIDTH - 1 && row < GRID_HEIGHT - 1) {
+        // Check to see if there are any overlapping wall pieces
+        for (const piece of gameBoard) {
+            if (piece.type === "wall" && 
+                (piece.direction === "right" && piece.col === col && 
+                    (piece.row === row || piece.row + 1 === row || piece.row === row + 1))
+                || (piece.direction === "bottom" && piece.row === row && piece.col === col)
+                ) return;
+        }
+        lastMoveValid = true;
         addVerticalWall(ctx, col, row, HOVER_COLOR);
         canv.style.cursor = "pointer";
     }
     else if (wallDirection === "bottom" && row < GRID_HEIGHT - 1 && col < GRID_WIDTH - 1) {
+        // Check to see if there are any overlapping wall pieces
+        for (const piece of gameBoard) {
+            if (piece.type === "wall" && 
+                (piece.direction === "bottom" && piece.row === row && 
+                    (piece.col === col || piece.col + 1 === col || piece.col === col + 1))
+                || (piece.direction === "right" && piece.row === row && piece.col === col)
+                ) return;
+        }
+        lastMoveValid = true;
         addHorizontalWall(ctx, col, row, HOVER_COLOR);
         canv.style.cursor = "pointer";
     }
     else {
+        // Only highlight squares that are listed in the valid moves
         for (const sq of validMoves) {
             if (sq.row === row && sq.col === col) {
+                lastMoveValid = true;
                 fillSquare(ctx, col, row, HOVER_COLOR);
                 canv.style.cursor = "pointer";
                 return;
@@ -190,19 +243,25 @@ function drawHover(ctx, row, col, wallDirection) {
     }
 }
 
+// Handle a click
 function handleSelect(evt, ctx) {
-    handleHover(void 0, ctx, true);
-    turn = (turn + 1) % 2;
+    if (lastMoveValid) {
+        handleHover(void 0, ctx, true);
+        // turn = (turn + 1) % 2;
 
-    let { row, col, wallDirection } = eventLocation(evt);
-    if (wallDirection === "right") {
-        console.log(`Clicked wall to the right of (${row}, ${col})`);
-    }
-    else if (wallDirection === "bottom") {
-        console.log(`Clicked wall below (${row}, ${col})`);
-    }
-    else {
-        console.log(`Clicked square (${row}, ${col})`);
+        let { row, col, wallDirection } = eventLocation(evt);
+
+        let piece;
+        if (wallDirection === "right" || wallDirection === "bottom") {
+            piece = { type: "wall", row: row, col: col, direction: wallDirection };
+            gameBoard.push(piece);
+            drawGameBoard(ctx);
+        }
+        else {
+            piece = { type: "player", row: row, col: col, playerNum: playerNum };
+        }
+
+        console.log("Submit piece for validation: ", piece);
     }
 }
 
