@@ -19,7 +19,7 @@ class QuoridorRoom (Room):
             if self.game.add_player(clientId):
                 pass
         else:
-            self.broadcast("Game is over. Please return home and start a new room to play.")
+            await self.broadcast("Game is over. Please return home and start a new room to play.")
 
         result = self.game.prep_result(playerNum)
         dictionary = result.toDictionary()
