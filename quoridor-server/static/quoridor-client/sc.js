@@ -13,19 +13,13 @@ const SERVER_ADDRESS = "localhost:8082";
 var squareSize, wallWidth;
 var lastRows = [], lastCols = [], lastDirections = [], lastMoveValid = false;
 var images = new Map();
-var turn = 0;
-var playerNum = 1;
+var turn = 1;
+var playerNum = -1, playerString = "";
 var gameFinished = false;
 var socket, roomID;
+var ctx;
 
-var gameBoard = [
-    { type: "player", row: 0, col: 4, playerNum: 1 },
-    { type: "player", row: 8, col: 4, playerNum: 2 }
-];
-var validMoves = [
-    { row: 0, col: 0 },
-    { row: 1, col: 1 }
-];
+var gameBoard = [], validMoves = [];
 
 const getLastRow = () => lastRows.length > 0 ? lastRows[lastRows.length - 1] : -1;
 const getLastCol = () => lastCols.length > 0 ? lastCols[lastCols.length - 1] : -1;
@@ -44,18 +38,54 @@ document.addEventListener("DOMContentLoaded", async () => {
     let img = preload(["Player-1.png", "Player-2.png"]);
     roomID = window.location.href.match(/room\/(.*)\//)[1];
     console.log("Attempting to join room:", roomID);
-    socket = new WebSocket(`ws://${SERVER_ADDRESS}/ws/${roomID}`);
-    socket.onmessage = handleMessage;
 
     const canvas = document.getElementById("game_canvas");
-    let ctx = initCanvas(canvas);
+    ctx = initCanvas(canvas);
 
     await img;
-    drawGameBoard(ctx);
+
+    socket = new WebSocket(`ws://${SERVER_ADDRESS}/ws/${roomID}`);
+    socket.onmessage = handleMessage;
 });
 
 function handleMessage(msg) {
-    console.log(JSON.parse(msg.data));
+    const data = JSON.parse(msg.data);
+    console.log(data);
+
+    if (data.hasOwnProperty('success') && !data.success) {
+        console.log("INVALID MOVE");
+        turn = (turn + 1) % 2;
+        alert("Invalid move. Try again!");
+    }
+    else if (data.hasOwnProperty('gameOver') && data.gameOver) {
+        turn = 1;
+        alert("Game over!");
+    }
+
+    if (data.hasOwnProperty('playerNum')) {
+        playerNum = data.playerNum;
+        playerString = playerNum === 0 ? "player_n" : "player_s";
+    }
+    if (data.hasOwnProperty('validMoves')) {
+        validMoves = [];
+        data.validMoves.forEach(move => {
+            validMoves.push({ row: move[1], col: move[0] });
+        });
+    }
+    if (data.hasOwnProperty('gameBoard')) {
+        clearGameBoard(ctx);
+        gameBoard = data.gameBoard;
+        turn = data.playerTurn === playerNum ? 0 : 1;
+        drawGameBoard(ctx);
+    }
+    else if (data.hasOwnProperty('message')) {
+        console.log(data.message);
+    }
+}
+
+function sendMessage(msg) {
+    const msgStr = JSON.stringify(msg);
+    socket.send(msgStr);
 }
 
 // Initialize the game board with all empty spaces
@@ -247,21 +277,20 @@ function drawHover(ctx, row, col, wallDirection) {
 function handleSelect(evt, ctx) {
     if (lastMoveValid) {
         handleHover(void 0, ctx, true);
-        // turn = (turn + 1) % 2;
+        turn = (turn + 1) % 2;
 
         let { row, col, wallDirection } = eventLocation(evt);
 
         let piece;
         if (wallDirection === "right" || wallDirection === "bottom") {
-            piece = { type: "wall", row: row, col: col, direction: wallDirection };
-            gameBoard.push(piece);
-            drawGameBoard(ctx);
+            piece = { type: "wall", row: row, col: col, player: playerString, direction: wallDirection };
         }
         else {
-            piece = { type: "player", row: row, col: col, playerNum: playerNum };
+            piece = { type: "player", row: row, col: col, player: playerString };
         }
 
         console.log("Submit piece for validation: ", piece);
+        sendMessage(piece);
     }
 }
 
