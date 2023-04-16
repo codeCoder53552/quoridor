@@ -60,6 +60,7 @@ function handleMessage(msg) {
     else if (data.hasOwnProperty('gameOver') && data.gameOver) {
         turn = 1;
         alert("Game over!");
+        return;
     }
 
     if (data.hasOwnProperty('playerNum')) {
