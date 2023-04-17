@@ -1,8 +1,6 @@
 from board import Board
 import json
 
-
-
 class Result:
     def __init__(self, success, message=None, gameboard = None, playerTurn = None, gameOver = None, validMoves=None,  wallsLeft = None):
         if success:
@@ -32,7 +30,7 @@ class Result:
 
 
 class QuoridorGame:
-    def __init__(self):
+    def __init__(self, maxPlayers=2):
         self.PLAYERS = ["player_n", "player_s", "player_e", "player_w"]
         self.board = Board()
         self.players = {"player_n": None, "player_s": None, "player_e": None, "player_w": None}
@@ -41,12 +39,12 @@ class QuoridorGame:
                             "player_e": (len(self.board.board) - 1, len(self.board.board[0])//2),
                             "player_w": (0, len(self.board.board[0])//2)}
         self.playerTurn = 0
-        self.maxNumOfplayers = 2
+        self.maxNumOfplayers = maxPlayers
         self.numOfActivePlayers = 0
         self.gameOver = False
         positions = self.get_player_coords()
         self.validMoves = self.board.valid_moves(positions[0], positions[1], positions[2], positions[3])
-        self.wallsLeft = [8,8]
+        self.wallsLeft = [8,8, 8, 8]
         self.wallsPlayed = []
 
     def is_valid_move(self, coordinate, player):
@@ -149,15 +147,25 @@ class QuoridorGame:
         return Result(True, None, gameBoard, self.playerTurn, self.gameOver, self.validMoves[self.PLAYERS[self.playerTurn]], self.wallsLeft[recentPlayer])
 
     def prep_game_board(self):
-        player1tuple = self.players_coords.get("player_n")
-        player2tuple = self.players_coords.get("player_s")
+        gameBoard = []
+        index = 0
+        for player in self.PLAYERS:
+            if index < self.maxNumOfplayers:
+                playerTuple = self.players_coords.get(player)
+                playerCol, playerRow = tuple(int(ti / 2) for ti in playerTuple)
+                gameBoard.append({"type":"player", "row":playerRow, "col" : playerCol, "playerNum": index + 1})
 
-        player1Col, player1Row = tuple(int(ti / 2) for ti in player1tuple)
-        player2Col, player2Row = tuple(int(ti / 2) for ti in player2tuple)
-
-        gameBoard = [{"type": "player", "row":player1Row, "col": player1Col, "playerNum":1},
-                     {"type": "player", "row":player2Row, "col": player2Col, "playerNum":2},]
         gameBoard.extend(self.wallsPlayed)
+
+        # player1tuple = self.players_coords.get("player_n")
+        # player2tuple = self.players_coords.get("player_s")
+
+        # player1Col, player1Row = tuple(int(ti / 2) for ti in player1tuple)
+        # player2Col, player2Row = tuple(int(ti / 2) for ti in player2tuple)
+
+        # gameBoard = [{"type": "player", "row":player1Row, "col": player1Col, "playerNum":1},
+        #              {"type": "player", "row":player2Row, "col": player2Col, "playerNum":2},]
+        # gameBoard.extend(self.wallsPlayed)
         return gameBoard
 
     def add_player(self, playerID):
