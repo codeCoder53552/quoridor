@@ -2,18 +2,20 @@
 
 const GRID_WIDTH = 9;
 const GRID_HEIGHT = 9;
-const GRID_COLOR_PRIMARY = "#dbb8a1";
-const GRID_COLOR_SECONDARY = "#7d5942";
-const WALL_INACTIVE_COLOR = "#38281e";
-const WALL_ACTIVE_COLOR = "#f66206";
+const GRID_COLOR_PRIMARY = "#BCAAA4";
+const GRID_COLOR_SECONDARY = "#795548";
+const WALL_INACTIVE_COLOR = "#4E342E";
+const WALL_ACTIVE_COLOR = "#E64A19";
 const HOVER_COLOR = "#8c8c8c";
 const HOVER_SELECT_COLOR = "#4c4c4c";
 const SERVER_ADDRESS = "localhost:8082";
 
+const PLAYER_COLORS = ["#43A047", "#E53935", "#000000", "#1565C0"];
+
 var squareSize, wallWidth;
 var lastRows = [], lastCols = [], lastDirections = [], lastMoveValid = false;
 var images = new Map();
-var turn = 1;
+var turn = 1, wallsLeft = 0;
 var playerNum = -1, playerString = "";
 var gameFinished = false;
 var socket, roomID;
@@ -24,6 +26,8 @@ var gameBoard = [], validMoves = [];
 const getLastRow = () => lastRows.length > 0 ? lastRows[lastRows.length - 1] : -1;
 const getLastCol = () => lastCols.length > 0 ? lastCols[lastCols.length - 1] : -1;
 const getLastDir = () => lastDirections.length > 0 ? lastDirections[lastDirections.length - 1] : -1;
+
+// Preload an image and store it by filename when ready
 const preload = async filenames => {
     for (const filename of filenames) {
         const img = new Image();
@@ -31,6 +35,17 @@ const preload = async filenames => {
         await img.decode();
         images.set(filename, img);
     }
+}
+
+// Copy the room code to the client's clipboard. Document must be in focus
+const copyRoomCode = () => {
+    navigator.clipboard.writeText(roomID)
+        .then(() => {
+            alert(`Copied room code to clipboard (${roomID})`);
+        })
+        .catch(() => {
+            alert(`Failed to copy room code (${roomID}) to clipboard.`);
+        });
 }
 
 // Init canvas and start game loop
@@ -46,26 +61,47 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     socket = new WebSocket(`ws://${SERVER_ADDRESS}/ws/${roomID}`);
     socket.onmessage = handleMessage;
+
+    document.getElementById("game_code").addEventListener("click", copyRoomCode);
 });
 
+// Handle incoming message from the web socket
 function handleMessage(msg) {
+    const turnLabel = document.getElementById("game_turn");
     const data = JSON.parse(msg.data);
-    console.log(data);
 
+    // Check the contents of the message and update game state
     if (data.hasOwnProperty('success') && !data.success) {
-        console.log("INVALID MOVE");
-        turn = (turn + 1) % 2;
+        turn = playerNum;
         alert("Invalid move. Try again!");
     }
     else if (data.hasOwnProperty('gameOver') && data.gameOver) {
-        turn = 1;
         alert("Game over!");
         gameFinished = true;
     }
 
     if (data.hasOwnProperty('playerNum')) {
+        // On the first message, set the player number and total number of walls
         playerNum = data.playerNum;
-        playerString = playerNum === 0 ? "player_n" : "player_s";
+        wallsLeft = data.wallsLeft;
+
+        switch (playerNum) {
+            case 0:
+                playerString = "player_n";
+                break;
+            case 1:
+                playerString = "player_s";
+                break;
+            case 2:
+                playerString = "player_e";
+                break;
+            case 3:
+                playerString = "player_w";
+                break;
+        }
+    }
+    if (data.hasOwnProperty("playerTurn")) {
+        turn = data.playerTurn;
     }
     if (data.hasOwnProperty('validMoves')) {
         validMoves = [];
@@ -74,16 +110,33 @@ function handleMessage(msg) {
         });
     }
     if (data.hasOwnProperty('gameBoard')) {
+        // Update the gameboard if supplied
         clearGameBoard(ctx);
         gameBoard = data.gameBoard;
-        turn = data.playerTurn === playerNum ? 0 : 1;
+        turn = data.playerTurn;
+
+        if (gameFinished) {
+            turnLabel.textContent = "Game over!";
+            turnLabel.style.backgroundColor = null;
+        }
+        else if (turn === playerNum) {
+            turnLabel.textContent = "Choose your move!";
+            turnLabel.style.backgroundColor = PLAYER_COLORS[playerNum];
+        }
+        else {
+            turnLabel.textContent = "Waiting for opponent . . .";
+            turnLabel.style.backgroundColor = null;
+        }
+
         drawGameBoard(ctx);
     }
-    else if (data.hasOwnProperty('message')) {
-        console.log(data.message);
+    if (data.hasOwnProperty('wallsLeft') && turn === playerNum + 1) {
+        document.getElementById("game_walls").textContent = data.wallsLeft;
+        wallsLeft = data.wallsLeft;
     }
 }
 
+// Pack game piece as JSON string and send over the socket
 function sendMessage(msg) {
     const msgStr = JSON.stringify(msg);
     socket.send(msgStr);
@@ -118,7 +171,7 @@ function drawGameBoard(ctx, callback) {
     for (const piece of gameBoard) {
         switch (piece.type) {
             case "player":
-                ctx.drawImage(images.get(`Player-${piece.playerNum}.png`), piece.col * (squareSize + wallWidth), piece.row * (squareSize + wallWidth), squareSize, squareSize);
+                ctx.drawImage(images.get(`Player-${piece.playerNum}.png`), piece.col * (squareSize + wallWidth) + wallWidth / 2, piece.row * (squareSize + wallWidth) + wallWidth / 2, squareSize - (wallWidth), squareSize - (wallWidth));
                 break;
             case "wall":
                 if (piece.direction === 'bottom') {
@@ -148,6 +201,9 @@ function initCanvas(canv) {
 
     squareSize = Math.floor(containerHeight / GRID_WIDTH);
     wallWidth = Math.floor(squareSize/8);
+
+    canv.width = canv.width - wallWidth;
+    canv.height = canv.height - wallWidth;
 
     for (let i = 0; i < GRID_WIDTH; i++) {
         for (let j = 0; j < GRID_HEIGHT; j++) {
@@ -201,7 +257,7 @@ function eventLocation(evt) {
 function handleHover(evt, ctx, clear) {
     let { lastRow, lastCol, lastDirection } = { lastRow: getLastRow(), lastCol: getLastCol(), lastDirection: getLastDir() };
     let { row, col, wallDirection } = clear ? { lastRow, lastCol, lastDirection } : eventLocation(evt);
-    if (turn !== 0 || gameFinished || row >= GRID_WIDTH || col >= GRID_HEIGHT) {
+    if (turn !== playerNum || gameFinished || row >= GRID_WIDTH || col >= GRID_HEIGHT) {
         lastMoveValid = false;
         return;
     }
@@ -221,6 +277,7 @@ function handleHover(evt, ctx, clear) {
             if (lastRow < GRID_HEIGHT - 1) addHorizontalWall(ctx, lastCol, lastRow, WALL_INACTIVE_COLOR);
         }
         
+        clearGameBoard(ctx);
         // Next, draw the game piece (player, wall) and draw the hover elements afterwards
         drawGameBoard(ctx, ctx => drawHover(ctx, row, col, wallDirection));
     }
@@ -235,7 +292,7 @@ function drawHover(ctx, row, col, wallDirection) {
     lastCols.push(col);
     lastDirections.push(wallDirection);
 
-    if (wallDirection === "right" && col < GRID_WIDTH - 1 && row < GRID_HEIGHT - 1) {
+    if (wallsLeft > 0 && wallDirection === "right" && col < GRID_WIDTH - 1 && row < GRID_HEIGHT - 1) {
         // Check to see if there are any overlapping wall pieces
         for (const piece of gameBoard) {
             if (piece.type === "wall" && 
@@ -248,7 +305,7 @@ function drawHover(ctx, row, col, wallDirection) {
         addVerticalWall(ctx, col, row, HOVER_COLOR);
         canv.style.cursor = "pointer";
     }
-    else if (wallDirection === "bottom" && row < GRID_HEIGHT - 1 && col < GRID_WIDTH - 1) {
+    else if (wallsLeft > 0 && wallDirection === "bottom" && row < GRID_HEIGHT - 1 && col < GRID_WIDTH - 1) {
         // Check to see if there are any overlapping wall pieces
         for (const piece of gameBoard) {
             if (piece.type === "wall" && 
@@ -278,7 +335,7 @@ function drawHover(ctx, row, col, wallDirection) {
 function handleSelect(evt, ctx) {
     if (lastMoveValid) {
         handleHover(void 0, ctx, true);
-        turn = (turn + 1) % 2;
+        turn++;
 
         let { row, col, wallDirection } = eventLocation(evt);
 

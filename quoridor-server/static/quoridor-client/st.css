@@ -1,5 +1,6 @@
 :root {
     --header-height: 100px;
+    --bg-color: #BDBDBD;
 }
 @font-face {
     font-family: roboto;
@@ -9,8 +10,8 @@
     font-display: swap;
 }
 @font-face {
-    font-family: roboto-med;
-    src: url('res/roboto-med.woff2');
+    font-family: product-sans;
+    src: url('res/product-sans.ttf');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -20,7 +21,8 @@ body {
     font-family: roboto, arial;
     margin: 0;
     padding: 0;
-    background-color: #9c9c9c;
+    background-color: var(--bg-color);
+    cursor: default;
 }
 
 .header {
@@ -29,18 +31,42 @@ body {
     align-items: center;
     width: 100%;
     height: var(--header-height);
-    background-color: #3c3c3c;
+    background-color: #0D47A1;
     box-shadow: 0 3px 6px rgba(0,0,0,.2);
-    text-indent: 130px;
     background-image: url(res/quoridor.png);
     background-size: auto 80%;
     background-repeat: no-repeat;
     background-position: 30px center;
 }
 .header-title {
-    font-family: roboto-med, roboto, arial;
+    font-family: product-sans, roboto, arial;
     color: #fff;
     font-size: 2.5rem;
+    margin-left: 130px;
+}
+.header-turn {
+    color: #fff;
+    background-color: rgba(0, 0, 0, .3);
+    margin-left: 20px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background-color .2s linear;
+}
+.header-copy {
+    position: absolute;
+    display: block;
+    right: 26px;
+    width: 60px;
+    height: 60px;
+    background-image: url(res/share.svg);
+    background-size: 40px 40px;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 10px;
+    transition: background-color .2s linear;
+}
+.header-copy:hover {
+    background-color: rgba(0, 0, 0, .2);
 }
 
 .game-container {
@@ -50,4 +76,28 @@ body {
     width: 100%;
     height: calc(100% - var(--header-height));
     top: var(--header-height);
-}  
+}
+#game_canvas {
+    border: 10px solid #3E2723;
+    image-rendering: crisp-edges;
+}
+
+.walls-counter {
+    position: absolute;
+    width: 70px;
+    border: 6px solid #5c5c5c;
+    background-color: var(--bg-color);
+    border-radius: 10px;
+    right: 10px;
+    top: calc(var(--header-height) + 10px);
+    font-family: product-sans, roboto, arial;
+    font-size: 1.3rem;
+    text-align: center;
+    color: #5c5c5c;
+}
+.walls-title {
+    display: block;
+}
+#game_walls {
+    font-size: 2rem;
+}
