@@ -8,7 +8,6 @@ const WALL_INACTIVE_COLOR = "#4E342E";
 const WALL_ACTIVE_COLOR = "#E64A19";
 const HOVER_COLOR = "#8c8c8c";
 const HOVER_SELECT_COLOR = "#4c4c4c";
-const SERVER_ADDRESS = "localhost:8082";
 
 const PLAYER_COLORS = ["#43A047", "#E53935", "#000000", "#1565C0"];
 
@@ -18,7 +17,7 @@ var images = new Map();
 var turn = 1, wallsLeft = 0, nextPlayer = -1;
 var playerNum = -1, playerString = "";
 var gameFinished = false;
-var socket, roomID;
+var socket, host, roomID;
 var ctx;
 
 var gameBoard = [], validMoves = [];
@@ -52,6 +51,7 @@ const copyRoomCode = () => {
 document.addEventListener("DOMContentLoaded", async () => {
     let img = preload(["Player-1.png", "Player-2.png", "Player-3.png", "Player-4.png"]);
     roomID = window.location.href.match(/room\/(.*)\//)[1];
+    host = window.location.host;
     console.log("Attempting to join room:", roomID);
 
     const canvas = document.getElementById("game_canvas");
@@ -59,7 +59,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await img;
 
-    socket = new WebSocket(`ws://${SERVER_ADDRESS}/ws/${roomID}`);
+    console.log("Connecting to host: ", host);
+    socket = new WebSocket(`ws://${host}/ws/${roomID}`);
     socket.onmessage = handleMessage;
 
     document.getElementById("game_code").addEventListener("click", copyRoomCode);
