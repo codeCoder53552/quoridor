@@ -105,11 +105,13 @@ function handleMessage(msg) {
                 playerString = "viewer";
                 break;
         }
+
+        wallCounter.textContent = wallsLeft;
     }
     if (data.hasOwnProperty("playerTurn")) {
         turn = data.playerTurn;
     }
-    if (data.hasOwnProperty('validMoves')) {
+    if (data.hasOwnProperty('validMoves') && data.validMoves) {
         validMoves = [];
         data.validMoves.forEach(move => {
             validMoves.push({ row: move[1], col: move[0] });
@@ -127,7 +129,7 @@ function handleMessage(msg) {
         }
         else if (playerNum === -1) {
             turnLabel.textContent = "Observing Live Game";
-            wallCounter.style.display = "none";
+            wallCounter.parentNode.style.display = "none";
             turnLabel.style.backgroundColor = null;
         }
         else if (turn === playerNum) {
