@@ -18,7 +18,10 @@ class QuoridorRoom (Room):
 
         if not self.game.gameOver:
             if self.game.add_player(clientId):
-                pass
+                result = self.game.prep_result(playerNum)
+                dictionary = result.toDictionary()
+                dictionary["playerNum"] = playerNum
+                await self.send(clientId, dictionary)
             else:
                 result = self.game.prep_result(-1)
                 dictionary = result.toDictionary()
@@ -27,10 +30,6 @@ class QuoridorRoom (Room):
         else:
             await self.broadcast("Game is over. Please return home and start a new room to play.")
 
-        result = self.game.prep_result(playerNum)
-        dictionary = result.toDictionary()
-        dictionary["playerNum"] = playerNum
-        await self.send(clientId, dictionary)
             
     async def disconnect(self, clientId: str):
         print("disconnect chat")

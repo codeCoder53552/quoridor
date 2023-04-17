@@ -44,7 +44,7 @@ class QuoridorGame:
         self.gameOver = False
         positions = self.get_player_coords()
         self.validMoves = self.board.valid_moves(positions[0], positions[1], positions[2], positions[3])
-        self.wallsLeft = [8,8, 8, 8]
+        self.wallsLeft = [8 // (self.maxNumOfplayers // 2)] * 4
         self.wallsPlayed = []
 
     def is_valid_move(self, coordinate, player):
@@ -147,7 +147,7 @@ class QuoridorGame:
 
         # This is used to return a result to spectactors when they join.
         if recentPlayer < 0:
-            return Result(True, None, gameBoard, self.playerTurn, self.gameOver, None, None)
+            return Result(True, None, gameBoard, self.playerTurn, self.gameOver, [], 0)
         
         return Result(True, None, gameBoard, self.playerTurn, self.gameOver, self.validMoves[self.PLAYERS[self.playerTurn]], self.wallsLeft[recentPlayer])
 
