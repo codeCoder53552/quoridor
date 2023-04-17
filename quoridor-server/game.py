@@ -144,6 +144,11 @@ class QuoridorGame:
     def prep_result(self, recentPlayer):
         gameBoard = self.prep_game_board()
         print(self.validMoves)
+
+        # This is used to return a result to spectactors when they join.
+        if recentPlayer < 0:
+            return Result(True, None, gameBoard, self.playerTurn, self.gameOver, None, None)
+        
         return Result(True, None, gameBoard, self.playerTurn, self.gameOver, self.validMoves[self.PLAYERS[self.playerTurn]], self.wallsLeft[recentPlayer])
 
     def prep_game_board(self):
