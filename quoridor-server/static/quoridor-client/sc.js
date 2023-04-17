@@ -26,6 +26,8 @@ var gameBoard = [], validMoves = [];
 const getLastRow = () => lastRows.length > 0 ? lastRows[lastRows.length - 1] : -1;
 const getLastCol = () => lastCols.length > 0 ? lastCols[lastCols.length - 1] : -1;
 const getLastDir = () => lastDirections.length > 0 ? lastDirections[lastDirections.length - 1] : -1;
+
+// Preload an image and store it by filename when ready
 const preload = async filenames => {
     for (const filename of filenames) {
         const img = new Image();
@@ -34,6 +36,8 @@ const preload = async filenames => {
         images.set(filename, img);
     }
 }
+
+// Copy the room code to the client's clipboard. Document must be in focus
 const copyRoomCode = () => {
     navigator.clipboard.writeText(roomID)
         .then(() => {
@@ -65,7 +69,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 function handleMessage(msg) {
     const turnLabel = document.getElementById("game_turn");
     const data = JSON.parse(msg.data);
-    console.log(data);
 
     // Check the contents of the message and update game state
     if (data.hasOwnProperty('success') && !data.success) {
@@ -332,7 +335,7 @@ function drawHover(ctx, row, col, wallDirection) {
 function handleSelect(evt, ctx) {
     if (lastMoveValid) {
         handleHover(void 0, ctx, true);
-        turn = turn + 1;
+        turn++;
 
         let { row, col, wallDirection } = eventLocation(evt);
 
