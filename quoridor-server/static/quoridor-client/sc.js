@@ -61,25 +61,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("game_code").addEventListener("click", copyRoomCode);
 });
 
+// Handle incoming message from the web socket
 function handleMessage(msg) {
     const turnLabel = document.getElementById("game_turn");
     const data = JSON.parse(msg.data);
     console.log(data);
 
+    // Check the contents of the message and update game state
     if (data.hasOwnProperty('success') && !data.success) {
-        console.log("INVALID MOVE");
-        turn = (turn + 1) % 2;
+        turn = playerNum;
         alert("Invalid move. Try again!");
     }
     else if (data.hasOwnProperty('gameOver') && data.gameOver) {
-        turn = 1;
         alert("Game over!");
         gameFinished = true;
     }
 
     if (data.hasOwnProperty('playerNum')) {
+        // On the first message, set the player number and total number of walls
         playerNum = data.playerNum;
-        playerString = playerNum === 0 ? "player_n" : "player_s";
+        wallsLeft = data.wallsLeft;
+
+        switch (playerNum) {
+            case 0:
+                playerString = "player_n";
+                break;
+            case 1:
+                playerString = "player_s";
+                break;
+            case 2:
+                playerString = "player_e";
+                break;
+            case 3:
+                playerString = "player_w";
+                break;
+        }
+    }
+    if (data.hasOwnProperty("playerTurn")) {
+        turn = data.playerTurn;
     }
     if (data.hasOwnProperty('validMoves')) {
         validMoves = [];
@@ -88,11 +107,16 @@ function handleMessage(msg) {
         });
     }
     if (data.hasOwnProperty('gameBoard')) {
+        // Update the gameboard if supplied
         clearGameBoard(ctx);
         gameBoard = data.gameBoard;
-        turn = data.playerTurn === playerNum ? 0 : 1;
+        turn = data.playerTurn;
 
-        if (turn === 0) {
+        if (gameFinished) {
+            turnLabel.textContent = "Game over!";
+            turnLabel.style.backgroundColor = null;
+        }
+        else if (turn === playerNum) {
             turnLabel.textContent = "Choose your move!";
             turnLabel.style.backgroundColor = PLAYER_COLORS[playerNum];
         }
@@ -103,12 +127,13 @@ function handleMessage(msg) {
 
         drawGameBoard(ctx);
     }
-    if (data.hasOwnProperty('wallsLeft')) {
+    if (data.hasOwnProperty('wallsLeft') && turn === playerNum + 1) {
         document.getElementById("game_walls").textContent = data.wallsLeft;
         wallsLeft = data.wallsLeft;
     }
 }
 
+// Pack game piece as JSON string and send over the socket
 function sendMessage(msg) {
     const msgStr = JSON.stringify(msg);
     socket.send(msgStr);
@@ -229,7 +254,7 @@ function eventLocation(evt) {
 function handleHover(evt, ctx, clear) {
     let { lastRow, lastCol, lastDirection } = { lastRow: getLastRow(), lastCol: getLastCol(), lastDirection: getLastDir() };
     let { row, col, wallDirection } = clear ? { lastRow, lastCol, lastDirection } : eventLocation(evt);
-    if (turn !== 0 || gameFinished || row >= GRID_WIDTH || col >= GRID_HEIGHT) {
+    if (turn !== playerNum || gameFinished || row >= GRID_WIDTH || col >= GRID_HEIGHT) {
         lastMoveValid = false;
         return;
     }
@@ -307,7 +332,7 @@ function drawHover(ctx, row, col, wallDirection) {
 function handleSelect(evt, ctx) {
     if (lastMoveValid) {
         handleHover(void 0, ctx, true);
-        turn = (turn + 1) % 2;
+        turn = turn + 1;
 
         let { row, col, wallDirection } = eventLocation(evt);
 
