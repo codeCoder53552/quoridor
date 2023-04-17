@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Handle incoming message from the web socket
 function handleMessage(msg) {
     const turnLabel = document.getElementById("game_turn");
+    const wallCounter = document.getElementById("game_walls");
     const data = JSON.parse(msg.data);
     console.log(data);
 
@@ -100,6 +101,9 @@ function handleMessage(msg) {
             case 3:
                 playerString = "player_w";
                 break;
+            default:
+                playerString = "viewer";
+                break;
         }
     }
     if (data.hasOwnProperty("playerTurn")) {
@@ -121,6 +125,11 @@ function handleMessage(msg) {
             turnLabel.textContent = "Game over!";
             turnLabel.style.backgroundColor = null;
         }
+        else if (playerNum === -1) {
+            turnLabel.textContent = "Observing Live Game";
+            wallCounter.style.display = "none";
+            turnLabel.style.backgroundColor = null;
+        }
         else if (turn === playerNum) {
             turnLabel.textContent = "Choose your move!";
             turnLabel.style.backgroundColor = PLAYER_COLORS[playerNum];
@@ -133,7 +142,7 @@ function handleMessage(msg) {
         drawGameBoard(ctx);
     }
     if (data.hasOwnProperty('wallsLeft') && turn === nextPlayer) {
-        document.getElementById("game_walls").textContent = data.wallsLeft;
+        wallCounter.textContent = data.wallsLeft;
         wallsLeft = data.wallsLeft;
     }
 }
