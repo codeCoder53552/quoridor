@@ -96,7 +96,7 @@ class Board:
                     # player in next spot
                     if (x+2, y) in activePlayers.values():
                         # if player is jumpable
-                        if x != BOARD_DIM - 5 and self.board[y][x+3] != Types.WALL and not (x+4,y) in activePlayers.values():
+                        if x != BOARD_DIM - 3 and self.board[y][x+3] != Types.WALL and not (x+4,y) in activePlayers.values():
                             validMoves[player].append((x+4, y))
                         # player is not jumpable, but possible to go to side
                         else:
@@ -118,7 +118,7 @@ class Board:
                     # player in next spot
                     if (x-2, y) in activePlayers.values():
                         # if player is jumpable
-                        if x != 4 and self.board[y][x-3] != Types.WALL and not (x-4,y) in activePlayers.values():
+                        if x != 2 and self.board[y][x-3] != Types.WALL and not (x-4,y) in activePlayers.values():
                             validMoves[player].append((x-4, y))
                         # player is not jumpable, but possible to go to side
                         else:
@@ -140,7 +140,7 @@ class Board:
                     # player in next spot
                     if (x, y-2) in activePlayers.values():
                         # if player is jumpable
-                        if y != 4 and self.board[y-3][x] != Types.WALL and not (x,y-4) in activePlayers.values():
+                        if y != 2 and self.board[y-3][x] != Types.WALL and not (x,y-4) in activePlayers.values():
                             validMoves[player].append((x, y-4))
                         # player is not jumpable, but possible to go to side
                         else:
@@ -149,7 +149,7 @@ class Board:
                                 validMoves[player].append((x-2,y-2))
 
                             # right
-                            if y != BOARD_DIM - 1 and self.board[y-2][x+1] != Types.WALL and not (x+2,y-2) in activePlayers.values():
+                            if x != BOARD_DIM - 1 and self.board[y-2][x+1] != Types.WALL and not (x+2,y-2) in activePlayers.values():
                                 validMoves[player].append((x+2,y-2))
 
                     # spot free
@@ -162,7 +162,7 @@ class Board:
                     # player in next spot
                     if (x, y+2) in activePlayers.values():
                         # if player is jumpable
-                        if y != BOARD_DIM - 5 and self.board[y+3][x] != Types.WALL and not (x,y+4) in activePlayers.values():
+                        if y != BOARD_DIM - 3 and self.board[y+3][x] != Types.WALL and not (x,y+4) in activePlayers.values():
                             validMoves[player].append((x, y+4))
                         # player is not jumpable, but possible to go to side
                         else:
@@ -171,7 +171,7 @@ class Board:
                                 validMoves[player].append((x-2,y+2))
 
                             # right
-                            if y != BOARD_DIM - 1 and self.board[y+2][x+1] != Types.WALL and not (x+2,y+2) in activePlayers.values():
+                            if x != BOARD_DIM - 1 and self.board[y+2][x+1] != Types.WALL and not (x+2,y+2) in activePlayers.values():
                                 validMoves[player].append((x+2,y+2))
 
                     # spot free
@@ -327,12 +327,12 @@ if __name__ == "__main__":
 
     # reachable = board.flood((8, 8), (0, 8))
 
-    try:
-        board.place_wall([(7,6), (5,6), (6,7)], (6,6), (8,6))
-    except Exception as e:
-        print(e)
+    # try:
+    #     board.place_wall([(7,6), (5,6), (6,7)], (6,6), (8,6))
+    # except Exception as e:
+    #     print(e)
 
-    validMoves = board.valid_moves((6,6), (8,6))
+    validMoves = board.valid_moves((16,2), (16,0))
     print(validMoves)
 
     # validMoves = board.valid_moves((6,6), (8,6))
@@ -340,4 +340,4 @@ if __name__ == "__main__":
 
 
 
-    print(board)
+    # print(board)
