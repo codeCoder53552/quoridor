@@ -24,6 +24,7 @@ app = FastAPI()
 basePath = os.path.dirname(__file__)
 
 rooms: Dict[str, Room] = dict()
+openRooms: Dict[str, List[Room]] = dict()
 
 
 # forward to webpage for specific room
@@ -49,8 +50,20 @@ def load_room2(roomId: str, item1: str):
 
 # initialize new room
 @app.get("/make_room/{roomType}")
-def make_room(roomType: str):
+def make_room(roomType: str, isOpen: bool = False):
     global rooms
+    global openRooms
+
+    # find an open room with spots left
+    if isOpen:
+        if roomType in openRooms.keys():
+            for room in openRooms[roomType]:
+                # positive numbers mean spots left
+                # negative numbers mean infinite spots left
+                if room.spotsLeft != 0:
+                    return room.id
+
+    ## make a normal room
     room: Room = RoomFactory().make_room(roomType)
 
     if room is None:
@@ -59,6 +72,12 @@ def make_room(roomType: str):
     # keep track of running rooms
     rooms[room.id] = room
     print(f"RoomID: \"{room.id}\"")
+
+    # keep track of open rooms
+    if isOpen:
+        if not roomType in openRooms.keys():
+            openRooms[roomType] = []
+        openRooms[roomType].append(room)
 
     # give roomid to player
     return room.id

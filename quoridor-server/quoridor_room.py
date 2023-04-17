@@ -5,7 +5,7 @@ import json
 from types import SimpleNamespace
 
 class QuoridorRoom (Room):
-    def __init__(self):
+    def __init__(self, players=2):
         super().__init__()
         self.folder = "quoridor-client"
         self._type = "game"

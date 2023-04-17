@@ -10,12 +10,17 @@ class Room :
         self.folder = ""
         self._type = "parent"
 
+        # how many new players this room can take
+        # -1 for infinate
+        self.spotsLeft = -1
+
         self.clients: Dict[str, WebSocket] = dict()
 
     # accept new connections
     async def connect(self, clientId, sock: WebSocket):
         print("connect")
         self.clients[clientId] = sock
+        self.spotsLeft -= 1
 
     # remove clients that droped
     async def disconnect(self, clientId: str):

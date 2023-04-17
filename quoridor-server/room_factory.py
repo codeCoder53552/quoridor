@@ -9,7 +9,8 @@ from typing import Union
 
 class RoomTypes:
     chat = "chat"
-    game = "game"
+    game2 = "game2"
+    game4 = "game4"
 
 class RoomFactory:
     # increasing index
@@ -31,8 +32,12 @@ class RoomFactory:
         # initiate correct room type
         if type == RoomTypes.chat:
             newRoom = ChatRoom()
-        elif type == RoomTypes.game:
-            newRoom = QuoridorRoom()
+        elif type == RoomTypes.game2:
+            newRoom = QuoridorRoom(2)
+            newRoom.spotsLeft = 2
+        elif type == RoomTypes.game4:
+            newRoom = QuoridorRoom(4)
+            newRoom.spotsLeft = 4
         else:
             return None
 

@@ -10,8 +10,13 @@
       <input type="text" id="roomId" autocomplete="off"/>
       <button>Join</button>
     </form>
-    <button onclick='makeRoom("chat")'>Make Chat Room</button>
-    <button onclick='makeRoom("game")'>Make Quoridor Room</button>
+    <button onclick='makeRoom("chat", false)'>Make Chat Room</button>
+    <h2>Make a Closed Quoridor Room</h2>
+    <button onclick='makeRoom("game2", false)'>Quoridor 2 Player</button>
+    <button onclick='makeRoom("game4", false)'>Quoridor 4 Player</button>
+    <h2>Make or Join a Quoridor Room</h2>
+    <button onClick='makeRoom("game2", true)'>Quoridor 2 Player</button>
+    <button onClick='makeRoom("game4", true)'>Quoridor 4 Player</button>
 
     <ul id="messages"></ul>
 
@@ -27,11 +32,15 @@
         event.preventDefault()
       }
 
-      function makeRoom(roomType) {
+      function makeRoom(roomType, isOpen) {
         console.log("making room " + roomType)
 
         var response
-        fetch("/make_room/" + roomType)
+        var query = "/make_room/" + roomType
+        if (isOpen) {
+          query += "?isOpen=true"
+        }
+        fetch(query)
           .then(response => response.text())
           .then((response) => {
             response = response.replace('"', "")
