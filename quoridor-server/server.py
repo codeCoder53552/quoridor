@@ -60,7 +60,7 @@ def make_room(roomType: str, isOpen: bool = False):
             for room in openRooms[roomType]:
                 # positive numbers mean spots left
                 # negative numbers mean infinite spots left
-                if room.spotsLeft != 0:
+                if room.spotsLeft != 0 and (room._type != "game" or room.game.gameOver):
                     return room.id
 
     ## make a normal room
