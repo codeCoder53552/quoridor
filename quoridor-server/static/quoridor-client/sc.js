@@ -15,7 +15,7 @@ const PLAYER_COLORS = ["#43A047", "#E53935", "#000000", "#1565C0"];
 var squareSize, wallWidth;
 var lastRows = [], lastCols = [], lastDirections = [], lastMoveValid = false;
 var images = new Map();
-var turn = 1, wallsLeft = 0;
+var turn = 1, wallsLeft = 0, nextPlayer = -1;
 var playerNum = -1, playerString = "";
 var gameFinished = false;
 var socket, roomID;
@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 function handleMessage(msg) {
     const turnLabel = document.getElementById("game_turn");
     const data = JSON.parse(msg.data);
+    console.log(data);
 
     // Check the contents of the message and update game state
     if (data.hasOwnProperty('success') && !data.success) {
@@ -84,6 +85,7 @@ function handleMessage(msg) {
         // On the first message, set the player number and total number of walls
         playerNum = data.playerNum;
         wallsLeft = data.wallsLeft;
+        nextPlayer = (playerNum + 1) % data.gameBoard.length;
 
         switch (playerNum) {
             case 0:
@@ -130,7 +132,7 @@ function handleMessage(msg) {
 
         drawGameBoard(ctx);
     }
-    if (data.hasOwnProperty('wallsLeft') && turn === playerNum + 1) {
+    if (data.hasOwnProperty('wallsLeft') && turn === nextPlayer) {
         document.getElementById("game_walls").textContent = data.wallsLeft;
         wallsLeft = data.wallsLeft;
     }
