@@ -28,7 +28,7 @@ class QuoridorRoom (Room):
                 dictionary["playerNum"] = -1
                 await self.send(clientId, dictionary)
         else:
-            await self.broadcast("Game is over. Please return home and start a new room to play.")
+            await self.broadcast({"gameOver": True})#("Game is over. Please return home and start a new room to play.")
 
             
     async def disconnect(self, clientId: str):
