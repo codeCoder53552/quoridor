@@ -154,6 +154,7 @@ class QuoridorGame:
                 playerTuple = self.players_coords.get(player)
                 playerCol, playerRow = tuple(int(ti / 2) for ti in playerTuple)
                 gameBoard.append({"type":"player", "row":playerRow, "col" : playerCol, "playerNum": index + 1})
+                index+=1
 
         gameBoard.extend(self.wallsPlayed)
 
